@@ -1,12 +1,12 @@
 # Typescript GraphQL AST Parser
 
-!!! DON'T USE THIS CODE IN YOUR PRODUCTION !!! 
+!!! DON'T USE THIS CODE IN THE PRODUCTION !!! 
 
 
-if you want to interactive play with this source code, just copy paste `index.ts` into https://www.typescriptlang.org/play and set typescript version to at least 4.2-beta.
+If you want to interactive play with this source code, just copy paste `index.ts` into https://www.typescriptlang.org/play and set typescript version to at least 4.2-beta.
 
 
-This repository is just fun project where I demonstrate power of typescript by writing Graphql parser in pure Type system.
+This repository is just my fun project where I demonstrate power of typescript by writing Graphql parser in pure Type system.
 
 ## Preview
 
@@ -74,4 +74,4 @@ type Query {
 - Interfaces ❌
 - Mutations ❌
     
-(Btw Source code is full of bugs...)
+(Btw Source code is full of bugs and edge case issues...)

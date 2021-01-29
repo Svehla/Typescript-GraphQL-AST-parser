@@ -1,6 +1,6 @@
 # Typescript GraphQL AST Parser
 
-!!! DON'T USE THIS CODE IN YOUR PRODUCTION !!!
+!!! DON'T USE THIS CODE IN YOUR PRODUCTION !!! 
 
 
 if you want to interactive play with this source code, just copy paste `index.ts` into https://www.typescriptlang.org/play and set typescript version to at least 4.2-beta.
@@ -13,9 +13,9 @@ This repository is just fun project where I demonstrate power of typescript by w
 
 ![Parser preview](/docs/screenshot-1.png)
 
-![Parser preview](/docs/screenshot-1.png)
+![Parser preview](/docs/screenshot-2.png)
 
-![Parser preview](/docs/screenshot-1.png)
+![Parser preview](/docs/screenshot-3.png)
 
 
 ### Demo Graphql Schema
@@ -46,32 +46,32 @@ type Query {
 `
 ```
 
-## TS Parser does support
-- Single line comments
-- Types
-- Enums
-- Input Types
-- Fields
-  - Basic Values
-    - String
-    - Boolean
-    - Float
-    - Int
-  - Nullable Fields
-  - Array Fields
-  - Arguments
-    - Fields
-      - Basic Values
-        - String
-        - Boolean
-        - Float
-        - Int
-      - Nullable Fields
-      - Array Fields
-    
+## TS Parser supports
 
-## TS Parser does not support:
-- Interfaces
-- Arguments default parameters
-- Mutations 
-- Multi line comments
+- Comments
+  - Single line comments ✅
+  - Multiline Comments ❌
+- Types ✅
+- Enums ✅
+- Input Types ✅
+- Fields ✅
+  - Basic Values ✅
+    - String ✅
+    - Boolean ✅
+    - Float ✅
+    - Int ✅
+  - Nullable Fields ✅
+  - Array Fields ✅
+  - Arguments ✅
+    - Default Parameters ❌
+    - Fields ✅ - Basic Values ✅
+        - String ✅
+        - Boolean ✅
+        - Float ✅
+        - Int ✅
+      - Nullable Fields ✅
+      - Array Fields ✅
+- Interfaces ❌
+- Mutations ❌
+    
+(Btw Source code is full of bugs...)

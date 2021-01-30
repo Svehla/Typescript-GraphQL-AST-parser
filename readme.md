@@ -63,7 +63,7 @@ type Query {
   - Nullable Fields ✅
   - Array Fields ✅
   - Arguments ✅
-    - Default Parameters ❌
+    - Default Parameters ✅
     - Fields ✅ - Basic Values ✅
         - String ✅
         - Boolean ✅

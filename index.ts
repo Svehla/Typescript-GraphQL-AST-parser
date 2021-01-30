@@ -8,15 +8,16 @@ type Tail<T> = T extends [infer FirstItem, ...infer Rest] ? Rest : never
 type RemoveStartWhiteSpaces<T> = T extends ` ${infer T}` ? RemoveStartWhiteSpaces<T> : T
 type RemoveEndWhiteSpaces<T> = T extends `${infer T} ` ? RemoveEndWhiteSpaces<T> : T
 
-type RemoveStartEndLn<T> = T extends `\n${infer T}` ? RemoveStartEndLn<T> : T
-type RemoveEndEndLn<T> = T extends `${infer T}\n` ? RemoveEndEndLn<T> : T
+// type RemoveStartEndLn<T> = T extends `\n${infer T}` ? RemoveStartEndLn<T> : T
+// type RemoveEndEndLn<T> = T extends `${infer T}\n` ? RemoveEndEndLn<T> : T
 
 type RemoveALlWhiteSpaces<
   T,
   T0 = RemoveStartWhiteSpaces<T>,
-  T1 = RemoveEndWhiteSpaces<T0>,
-  T2 = RemoveStartEndLn<T1>,
-  T3 = RemoveEndEndLn<T2>
+  T1 = RemoveEndWhiteSpaces<T0>
+  // Is ok to comment this two lines?
+  // T2 = RemoveStartEndLn<T1>,
+  // T3 = RemoveEndEndLn<T2>
 > = T1
 
 // --------- lines utils ----------------
@@ -62,14 +63,25 @@ type RemoveLineStarsWIthHashTag<T> = T extends []
 // ----------------------------------
 // ----------- value parser ---------
 // ----------------------------------
-type ParseValueIntoTypescript<T> = GetMappedType<T>
+type ParseRawGQLArgValueWithDefaultOption<T> = T extends `${infer DataType}=${infer DefaultValue}`
+  ? {
+      value: ParseRawGQLValue<DataType>
+      defaultValue: RemoveALlWhiteSpaces<DefaultValue>
+    }
+  : {
+      value: ParseRawGQLValue<T>
+      defaultValue: null
+    }
+
+type ParseRawGQLValue<T> = GetMappedType<RemoveALlWhiteSpaces<T>>
+
 type GetMappedType<T> = T extends `${infer Type}!`
   ? GetMappedArrayType<Type>
   : GetMappedArrayType<T> | null
 
 type GetMappedArrayType<T> = T extends `[${infer Arr}]`
   ? // recursion to optional arr type
-    ParseValueIntoTypescript<Arr[]>
+    ParseRawGQLValue<Arr[]>
   : GetMappedBaseType<T>
 
 type GetMappedBaseType<T> =
@@ -85,64 +97,145 @@ type GetMappedBaseType<T> =
     : T
 
 // ----------------------------------
-type ClearEnumParse<T> = T extends []
-  ? //
-    []
-  : [
-      {
-        // @ts-expect-error
-        typeName: RemoveALlWhiteSpaces<Head<T>['type']>
-        // @ts-expect-error
-        body: FilterEmptyItems<RemoveItemStarEndWhiteSpaces<SplitByLines<Head<T>['body']>>>
-      },
-      ...ClearEnumParse<Tail<T>>
-    ]
 
-type ClearTypeParse<T> = T extends []
+// -------------------------------
+// ------ GQL Input type ---------
+// -------------------------------
+
+type ExtractGQLInputTypesAst<
+  T extends string,
+  RawTypeStrings = ParseGqlInput<T>,
+  Splits = ParseRawInputTypeStrings<RawTypeStrings>,
+  MergeInputs = {
+    // @ts-expect-error
+    [K in Splits[number]['typeName']]: Extract<Splits[number], { typeName: K }>['body']
+  }
+  //
+> = MergeInputs
+
+type ParseGqlInput<
+  T extends string
+> = T extends `${infer _Whatever}input${infer InputName}{${infer InputBody}}${infer Rest}`
+  ? [{ type: InputName; body: InputBody }, ...ParseGqlInput<Rest>]
+  : []
+
+type ParseRawInputTypeStrings<T> = T extends []
   ? []
-  : // ---- gaga magic ----
-    [
-      {
-        // @ts-expect-error
-        typeName: RemoveALlWhiteSpaces<Head<T>['type']>
-        body: {
-          // TODO: extract into "variable" or MergeBody<> Generic
-          // @ts-expect-error
-          [K in ParseKeyValues<
-            // @ts-expect-error
-            SplitByLines<Head<T>['body']>
-          >[number]['key']]: {
-            // NO idea what am I doing :D :D :D but it works :D :D
-            args: {
-              // @ts-expect-error
-              [KK in Extract<
-                // @ts-expect-error
-                ParseKeyValues<SplitByLines<Head<T>['body']>>[number],
-                { key: K }
-              >['args'][number]['key']]: ParseValueIntoTypescript<
-                // @ts-expect-error
-                Extract<
-                  // @ts-expect-error
-                  Extract<
-                    // @ts-expect-error
-                    ParseKeyValues<SplitByLines<Head<T>['body']>>[number],
-                    { key: K }
-                  >['args'][number],
-                  { key: KK }
-                >['value']
-              >
-            }
-            // args: // @ts-expect-error
-            // Extract<ParseKeyValues<SplitByLines<Head<T>['body']>>[number], { key: K }>['args']
-            value: ParseValueIntoTypescript<
-              // @ts-expect-error
-              Extract<ParseKeyValues<SplitByLines<Head<T>['body']>>[number], { key: K }>['value']
-            >
-          }
-        }
-      },
-      ...ClearTypeParse<Tail<T>>
-    ]
+  : // @ts-expect-error
+    [ParseRawInputTypeString<Head<T>>, ...ParseRawInputTypeStrings<Tail<T>>]
+
+type ParseRawInputTypeString<
+  T extends { type: string; body: string },
+  TypeName = RemoveALlWhiteSpaces<T['type']>,
+  BodyPropsKeyVal = ParseKeyValues<SplitByLines<T['body']>>[number],
+  Body = {
+    // ---- gaga magic ----
+    // @ts-expect-error
+    [K in BodyPropsKeyVal['key']]: {
+      // @ts-expect-error
+      value: ParseRawGQLValue<Extract<BodyPropsKeyVal, { key: K }>['value']>
+    }
+  }
+> = {
+  typeName: TypeName
+  body: Body
+}
+
+// -------------------------------
+// --------- GQL type ------------
+// -------------------------------
+
+type ExtractGQLTypesAST<
+  T extends string,
+  RawTypeStrings = ParseGqlTypes<T>,
+  Splits = ParseRawTypeStrings<RawTypeStrings>,
+  MergeTypes = {
+    // @ts-expect-error
+    [K in Splits[number]['typeName']]: Extract<Splits[number], { typeName: K }>['body']
+  }
+> = MergeTypes
+
+type ParseGqlTypes<
+  T extends string
+> = T extends `${infer _Whatever}type${infer TypeDeclaration}{${infer TypeBody}}${infer Rest}`
+  ? [{ type: TypeDeclaration; body: TypeBody }, ...ParseGqlTypes<Rest>]
+  : []
+
+type ParseRawTypeStrings<T> = T extends []
+  ? []
+  : // @ts-expect-error
+    [ParseRawTypeString<Head<T>>, ...ParseRawTypeStrings<Tail<T>>]
+
+type ParseRawTypeString<
+  T extends { type: string; body: string },
+  TypeName = RemoveALlWhiteSpaces<T['type']>,
+  BodyPropsKeyVal = ParseKeyValues<SplitByLines<T['body']>>[number],
+  Body = {
+    // ---- gaga magic ----
+    // @ts-expect-error
+    [K in BodyPropsKeyVal['key']]: {
+      // @ts-expect-error
+      args: ParserRawGQLTypeBodyPropString<Extract<BodyPropsKeyVal, { key: K }>['args']>
+      // @ts-expect-error
+      value: ParseRawGQLValue<Extract<BodyPropsKeyVal, { key: K }>['value']>
+    }
+  }
+> = {
+  typeName: TypeName
+  body: Body
+}
+
+type ParserRawGQLTypeBodyPropString<
+  // TODO: T should be only arg, not whole body
+  T extends string[],
+  // TODO: add better names
+  ArgKeyVal = T[number],
+  T0 = {
+    // TODO: add gql arg default value
+    // @ts-expect-error
+    [KK in ArgKeyVal['key']]: ParseRawGQLArgValueWithDefaultOption<
+      // @ts-expect-error
+      Extract<ArgKeyVal, { key: KK }>['value']
+    >
+  }
+> = T0
+
+// -------------------------------
+// --------- GQL enum ------------
+// -------------------------------
+
+type ExtractGQLEnumsAST<
+  T extends string,
+  RawTypeStrings = ParseGqlEnums<T>,
+  Splits = ParseRawEnumStrings<RawTypeStrings>,
+  MergeEnums = {
+    // @ts-expect-error
+    [K in Splits[number]['typeName']]: Extract<Splits[number], { typeName: K }>['body'][number]
+  }
+  //
+> = MergeEnums
+
+type ParseGqlEnums<
+  T extends string
+> = T extends `${infer _Whatever}enum${infer EnumName}{${infer EnumBody}}${infer Rest}`
+  ? [{ type: EnumName; body: EnumBody }, ...ParseGqlEnums<Rest>]
+  : []
+
+type ParseRawEnumString<T> = {
+  // @ts-expect-error
+  typeName: RemoveALlWhiteSpaces<T['type']>
+  // @ts-expect-error
+  body: FilterEmptyItems<RemoveItemStarEndWhiteSpaces<SplitByLines<T['body']>>>
+}
+
+type ParseRawEnumStrings<T> = T extends []
+  ? []
+  : [ParseRawEnumString<Head<T>>, ...ParseRawEnumStrings<Tail<T>>]
+
+// ----------------------------------
+// ----------------------------------
+// ----------------------------------
+// ----------------------------------
 
 // --------- GQL AST Parsers ----------
 type ParseKeyValue<
@@ -167,46 +260,7 @@ type ParseKeyValues<T> = T extends []
   ? ParseKeyValues<Tail<T>>
   : [ParseKeyValue<Head<T>>, ...ParseKeyValues<Tail<T>>]
 
-type ParseGqlTypes<
-  T extends string
-> = T extends `${infer _Whatever}type${infer TypeDeclaration}{${infer TypeBody}}${infer Rest}`
-  ? [{ type: TypeDeclaration; body: TypeBody }, ...ParseGqlTypes<Rest>]
-  : []
-
-type ParseGqlInput<
-  T extends string
-> = T extends `${infer _Whatever}input${infer InputName}{${infer InputBody}}${infer Rest}`
-  ? [{ type: InputName; body: InputBody }, ...ParseGqlInput<Rest>]
-  : []
-
-type ParseGqlEnums<
-  T extends string
-> = T extends `${infer _Whatever}enum${infer EnumName}{${infer EnumBody}}${infer Rest}`
-  ? [{ type: EnumName; body: EnumBody }, ...ParseGqlEnums<Rest>]
-  : []
-
 // whole codebase extractors
-
-type GetExtractTypes<
-  T extends string,
-  RawTypeStrings = ParseGqlTypes<T>,
-  Splits = ClearTypeParse<RawTypeStrings>
-  //
-> = Splits
-
-type GetExtractInput<
-  T extends string,
-  RawTypeStrings = ParseGqlInput<T>,
-  Splits = ClearTypeParse<RawTypeStrings>
-  //
-> = Splits
-
-type GetExtractEnums<
-  T extends string,
-  RawTypeStrings = ParseGqlEnums<T>,
-  Splits = ClearEnumParse<RawTypeStrings>
-  //
-> = Splits
 
 type RemoveComments<
   T extends string,
@@ -217,38 +271,20 @@ type RemoveComments<
 
 type GetGqlAST<
   T extends string,
-  ClearedGql = RemoveComments<T>,
-  // ------ gql input ---------
-  // @ts-expect-error
-  GqlInputs = GetExtractInput<ClearedGql>,
-  MergeInputs = {
-    // @ts-expect-error
-    [K in GqlInputs[number]['typeName']]: Extract<GqlInputs[number], { typeName: K }>['body']
-  },
-  // ------ gql type ---------
-  // @ts-expect-error
-  GqlTypes = GetExtractTypes<ClearedGql>,
-  MergeTypes = {
-    // @ts-expect-error
-    [K in GqlTypes[number]['typeName']]: Extract<GqlTypes[number], { typeName: K }>['body']
-  },
-  // ------ gql enums ---------
-  // @ts-expect-error
-  Enums = GetExtractEnums<ClearedGql>,
-  MergeEnums = {
-    // @ts-expect-error
-    [K in Enums[number]['typeName']]: Extract<Enums[number], { typeName: K }>['body'][number]
-  }
+  GQLCodeComments = RemoveComments<T>,
+  GQLInputTypesAST = ExtractGQLInputTypesAst<Cast<GQLCodeComments, string>>,
+  GQLTypesAST = ExtractGQLTypesAST<Cast<GQLCodeComments, string>>,
+  GQLEnumsAST = ExtractGQLEnumsAST<Cast<GQLCodeComments, string>>
 > = {
-  types: MergeTypes
-  inputs: MergeInputs
-  enums: MergeEnums
+  inputs: GQLInputTypesAST
+  enums: GQLEnumsAST
+  types: GQLTypesAST
 }
 
 const typeDefs = `
 # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 type Book {
-  title: String!
+  title(limit: Int = 10, offset: Int!): String!
   author: Float!
   age: Int
 }
@@ -272,4 +308,3 @@ type Query {
 
 type ParsedGraphQL = GetGqlAST<typeof typeDefs>
 
-type XXX = ParsedGraphQL['types']['Query']['books']

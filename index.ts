@@ -1,6 +1,9 @@
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// --------- utils --------------
+
+// -------------------------------
+// ------------ utils ------------
+// -------------------------------
 export type Cast<T, U> = T extends U ? T : U
 type Head<T> = T extends [infer FirstItem, ...infer Rest] ? FirstItem : never
 type Tail<T> = T extends [infer FirstItem, ...infer Rest] ? Rest : never
@@ -8,19 +11,18 @@ type Tail<T> = T extends [infer FirstItem, ...infer Rest] ? Rest : never
 type RemoveStartWhiteSpaces<T> = T extends ` ${infer T}` ? RemoveStartWhiteSpaces<T> : T
 type RemoveEndWhiteSpaces<T> = T extends `${infer T} ` ? RemoveEndWhiteSpaces<T> : T
 
-// type RemoveStartEndLn<T> = T extends `\n${infer T}` ? RemoveStartEndLn<T> : T
+type RemoveStartEndLn<T> = T extends `\n${infer T}` ? RemoveStartEndLn<T> : T
 // type RemoveEndEndLn<T> = T extends `${infer T}\n` ? RemoveEndEndLn<T> : T
 
 type RemoveALlWhiteSpaces<
   T,
   T0 = RemoveStartWhiteSpaces<T>,
   T1 = RemoveEndWhiteSpaces<T0>
-  // Is ok to comment this two lines?
   // T2 = RemoveStartEndLn<T1>,
   // T3 = RemoveEndEndLn<T2>
 > = T1
 
-// --------- lines utils ----------------
+// --------- Array-Lines utils ----------------
 
 type RemoveItemStarEndWhiteSpaces<T> = T extends []
   ? []
@@ -48,9 +50,17 @@ type SplitByLines<T extends string> = T extends ``
   ? [A, ...SplitByLines<B>]
   : [T]
 
-// ------------------------------
+// -------------------------------
+// --------- comments ------------
+// -------------------------------
 
-// --------- comments ----------
+type RemoveGQLComments<
+  T extends string,
+  Lines = SplitByLines<T>,
+  LinesWithoutNotes = RemoveLineStarsWIthHashTag<Lines>,
+  ClearedQuery = JoinArrByNewLine<LinesWithoutNotes>
+> = ClearedQuery
+
 type IsLineStartsWithHashTag<T> = T extends `#${infer X}` ? true : false
 type GQLLineIsComment<T, T0 = RemoveStartWhiteSpaces<T>, T1 = IsLineStartsWithHashTag<T0>> = T1
 
@@ -60,9 +70,26 @@ type RemoveLineStarsWIthHashTag<T> = T extends []
   ? RemoveLineStarsWIthHashTag<Tail<T>>
   : [Head<T>, ...RemoveLineStarsWIthHashTag<Tail<T>>]
 
+// --------- GQL AST Parsers ----------
 // ----------------------------------
 // ----------- value parser ---------
 // ----------------------------------
+
+// This generic does not parse key val with arguments
+type ParseKeyValue<T> = RemoveALlWhiteSpaces<T> extends `${infer Key}:${infer Value}`
+  ? {
+      key: RemoveALlWhiteSpaces<Key>
+      value: RemoveALlWhiteSpaces<Value>
+    }
+  : null
+
+type ParseSimpleKeyValues<T> = T extends []
+  ? []
+  : ParseKeyValue<Head<T>> extends null
+  ? ParseSimpleKeyValues<Tail<T>>
+  : [ParseKeyValue<Head<T>>, ...ParseSimpleKeyValues<Tail<T>>]
+
+
 type ParseRawGQLArgValueWithDefaultOption<T> = T extends `${infer DataType}=${infer DefaultValue}`
   ? {
       value: ParseRawGQLValue<DataType>
@@ -115,7 +142,7 @@ type ExtractGQLInputTypesAst<
 
 type ParseGqlInput<
   T extends string
-> = T extends `${infer _Whatever}input${infer InputName}{${infer InputBody}}${infer Rest}`
+> = T extends `${infer _Whatever}input ${infer InputName}{${infer InputBody}}${infer Rest}`
   ? [{ type: InputName; body: InputBody }, ...ParseGqlInput<Rest>]
   : []
 
@@ -127,9 +154,8 @@ type ParseRawInputTypeStrings<T> = T extends []
 type ParseRawInputTypeString<
   T extends { type: string; body: string },
   TypeName = RemoveALlWhiteSpaces<T['type']>,
-  BodyPropsKeyVal = ParseKeyValues<SplitByLines<T['body']>>[number],
+  BodyPropsKeyVal = ParseSimpleKeyValues<SplitByLines<T['body']>>[number],
   Body = {
-    // ---- gaga magic ----
     // @ts-expect-error
     [K in BodyPropsKeyVal['key']]: {
       // @ts-expect-error
@@ -157,7 +183,7 @@ type ExtractGQLTypesAST<
 
 type ParseGqlTypes<
   T extends string
-> = T extends `${infer _Whatever}type${infer TypeDeclaration}{${infer TypeBody}}${infer Rest}`
+> = T extends `${infer _Whatever}type ${infer TypeDeclaration}{${infer TypeBody}}${infer Rest}`
   ? [{ type: TypeDeclaration; body: TypeBody }, ...ParseGqlTypes<Rest>]
   : []
 
@@ -169,7 +195,8 @@ type ParseRawTypeStrings<T> = T extends []
 type ParseRawTypeString<
   T extends { type: string; body: string },
   TypeName = RemoveALlWhiteSpaces<T['type']>,
-  BodyPropsKeyVal = ParseKeyValues<SplitByLines<T['body']>>[number],
+  // key val can have more lines it you have multiline args
+  BodyPropsKeyVal = ParseTypeKeyValuesWithArgs<T['body']>[number],
   Body = {
     // ---- gaga magic ----
     // @ts-expect-error
@@ -185,6 +212,53 @@ type ParseRawTypeString<
   body: Body
 }
 
+
+// pretty tricky parser which try to resolve if key: value has some args
+// just by checking if the name includes `(` bracket character
+// btw there is duplicate code for simple non arguments key recursion
+// TODO: add docs
+type ParseTypeKeyValuesWithArgs<T> = RemoveALlWhiteSpaces<T> extends ``
+  ? []
+  : T extends `${infer Key}:${infer Value}\n${infer PureRest}`
+  ? // if include bracket => key has args...
+    Key extends `${infer What1}(${infer Args}`
+    ? T extends `${infer KeyName}(${infer Args}):${infer ValByArgs}\n${infer Rest}`
+      ? [
+          {
+            key: RemoveALlWhiteSpaces<RemoveStartEndLn<KeyName>>
+            // enable split args by
+            // 1) new line
+            // 2) comma
+            args: ParseSimpleKeyValues<
+              FilterEmptyItems<SplitByLines<JoinArrByNewLine<SplitByCommas<Args>>>>
+            >
+            value: RemoveALlWhiteSpaces<ValByArgs>
+            rest: Rest
+          },
+          ...ParseTypeKeyValuesWithArgs<Rest>
+        ]
+      : [
+          {
+            // ugh: '_-----'
+            key: RemoveALlWhiteSpaces<RemoveStartEndLn<Key>>
+            args: null
+            value: RemoveALlWhiteSpaces<Value>
+          },
+          ...ParseTypeKeyValuesWithArgs<PureRest>
+        ]
+    : T extends `${infer Key}:${infer Value}\n${infer Rest2}`
+    ? [
+        {
+          // ugh: '_pure-'
+          key: RemoveALlWhiteSpaces<RemoveStartEndLn<Key>>
+          args: null
+          value: RemoveALlWhiteSpaces<Value>
+        },
+        ...ParseTypeKeyValuesWithArgs<Rest2>
+      ]
+    : []
+  : []
+  
 type ParserRawGQLTypeBodyPropString<
   // TODO: T should be only arg, not whole body
   T extends string[],
@@ -200,6 +274,19 @@ type ParserRawGQLTypeBodyPropString<
   }
 > = T0
 
+type BBody = `
+title(
+  limit: Int = 10
+  offset: Int!, omg: String
+): String!
+author: Float!
+age: In
+`
+
+type XX = ParseRawTypeString<{
+  type: 'xxx'
+  body: BBody
+}>
 // -------------------------------
 // --------- GQL enum ------------
 // -------------------------------
@@ -237,74 +324,48 @@ type ParseRawEnumStrings<T> = T extends []
 // ----------------------------------
 // ----------------------------------
 
-// --------- GQL AST Parsers ----------
-type ParseKeyValue<
-  T
-> = RemoveALlWhiteSpaces<T> extends `${infer KeyName}(${infer Args}):${infer ValByArgs}`
-  ? {
-      key: RemoveALlWhiteSpaces<KeyName>
-      args: ParseKeyValues<SplitByCommas<Args>>
-      value: RemoveALlWhiteSpaces<ValByArgs>
-    }
-  : T extends `${infer Key}:${infer Value}`
-  ? {
-      key: RemoveALlWhiteSpaces<Key>
-      args: null
-      value: RemoveALlWhiteSpaces<Value>
-    }
-  : null
-
-type ParseKeyValues<T> = T extends []
-  ? []
-  : ParseKeyValue<Head<T>> extends null
-  ? ParseKeyValues<Tail<T>>
-  : [ParseKeyValue<Head<T>>, ...ParseKeyValues<Tail<T>>]
-
 // whole codebase extractors
-
-type RemoveComments<
-  T extends string,
-  Lines = SplitByLines<T>,
-  LinesWithoutNotes = RemoveLineStarsWIthHashTag<Lines>,
-  ClearedQuery = JoinArrByNewLine<LinesWithoutNotes>
-> = ClearedQuery
 
 type GetGqlAST<
   T extends string,
-  GQLCodeComments = RemoveComments<T>,
+  // GQLCodeComments = T,
+  GQLCodeComments = RemoveGQLComments<T>,
   GQLInputTypesAST = ExtractGQLInputTypesAst<Cast<GQLCodeComments, string>>,
   GQLTypesAST = ExtractGQLTypesAST<Cast<GQLCodeComments, string>>,
   GQLEnumsAST = ExtractGQLEnumsAST<Cast<GQLCodeComments, string>>
 > = {
-  inputs: GQLInputTypesAST
-  enums: GQLEnumsAST
   types: GQLTypesAST
+  enums: GQLEnumsAST
+  inputs: GQLInputTypesAST
 }
 
 const typeDefs = `
 # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
-type Book {
-  title(limit: Int = 10, offset: Int!): String!
+enum OrderByKeyword {
+  ASC
+  DESC
+}
+type Mutation {
+  contactForm(
+    input: OrderByKeyword!,
+    
+  ): ContactFormResType
+}
+type Query {
+  title(
+    limit: Int = 10
+    offset: Int!, thirdArg: String!
+  ): String!
   author: Float!
   age: Int
 }
-
-enum DemoCarType {
-  FOR_SALE
-  ON_REQUEST
-}
-
 input Pagination {
   value: String
-}
-
-# case, the "books" query returns an array of zero or more Books (defined above).
-type Query {
-  books(limit: Int!, offset: String): [Book]
-  firstName: String!
-  lastName: Boolean
 }
 `
 
 type ParsedGraphQL = GetGqlAST<typeof typeDefs>
 
+type Types = ParsedGraphQL['types']
+type Enums = ParsedGraphQL['enums']
+type Inputs = ParsedGraphQL['inputs']

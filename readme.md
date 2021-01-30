@@ -50,7 +50,7 @@ type Query {
 
 - Comments
   - Single line comments ✅
-  - Multiline Comments ❌
+- Descriptions ❌
 - Types ✅
 - Enums ✅
 - Input Types ✅
@@ -72,6 +72,6 @@ type Query {
       - Nullable Fields ✅
       - Array Fields ✅
 - Interfaces ❌
-- Mutations ❌
+- Mutations ✅
     
 (Btw Source code is full of bugs and edge case issues...)

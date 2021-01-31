@@ -11,19 +11,21 @@ type Tail<T> = T extends [infer _FirstItem, ...infer Rest] ? Rest : never
 type RemoveStartWhiteSpaces<T> = T extends ` ${infer T}` ? RemoveStartWhiteSpaces<T> : T
 type RemoveEndWhiteSpaces<T> = T extends `${infer T} ` ? RemoveEndWhiteSpaces<T> : T
 
+// TODO: make generic to ignore \n at starts and the end recursively
 type RemoveStartEndLn<T> = T extends `\n${infer T}` ? RemoveStartEndLn<T> : T
 // type RemoveEndEndLn<T> = T extends `${infer T}\n` ? RemoveEndEndLn<T> : T
 
-type RemoveALlWhiteSpaces<
+type TrimWhiteSpaces<
+  //
   T,
   T0 = RemoveStartWhiteSpaces<T>,
   T1 = RemoveEndWhiteSpaces<T0>
-  //
 > = T1
 
-type MapArrayRemoveALlWhiteSpaces<T> = T extends []
+type MapArrayTrimWhiteSpaces<T> = T extends []
   ? []
-  : [RemoveALlWhiteSpaces<Head<T>>, ...MapArrayRemoveALlWhiteSpaces<Tail<T>>]
+  : [TrimWhiteSpaces<Head<T>>, ...MapArrayTrimWhiteSpaces<Tail<T>>]
+
 /*
 test call
 
@@ -36,7 +38,6 @@ type TestConvertArrIntoObj = ConvertArrIntoObject<
   'id'
 >
 */
-
 type ConvertArrIntoObject<
   T extends { [K in Key]: string }[],
   Key extends string,
@@ -56,9 +57,13 @@ type RemoveItemStarEndWhiteSpaces<T> = T extends []
       ...RemoveItemStarEndWhiteSpaces<Tail<T>>
     ]
 
-type FilterEmptyItems<T> = T extends [] ? [] : Head<T> extends '' ? Tail<T> : [Head<T>, ...Tail<T>]
+type FilterEmptyItems<T extends string[]> = T extends []
+  ? []
+  : Head<T> extends ''
+  ? Tail<T>
+  : [Head<T>, ...Tail<T>]
 
-type JoinArrByNewLine<T> = T extends []
+type JoinArrByNewLine<T extends string[]> = T extends []
   ? ''
   : // @ts-expect-error ????
     `${Head<T>}\n${JoinArrByNewLine<Tail<T>>}`
@@ -75,7 +80,7 @@ type SplitByLines<T extends string> = T extends ``
   ? [A, ...SplitByLines<B>]
   : [T]
 
-type SplitByAmpersand<T extends string> =  T extends ``
+type SplitByAmpersand<T extends string> = T extends ``
   ? []
   : T extends `${infer A}&${infer B}`
   ? [A, ...SplitByLines<B>]
@@ -89,6 +94,7 @@ type RemoveGQLComments<
   T extends string,
   Lines = SplitByLines<T>,
   LinesWithoutNotes = RemoveLineStarsWIthHashTag<Lines>,
+  // @ts-expect-error
   ClearedQuery = JoinArrByNewLine<LinesWithoutNotes>
 > = ClearedQuery
 
@@ -107,51 +113,49 @@ type RemoveLineStarsWIthHashTag<T> = T extends []
 // ----------------------------------
 
 // This generic does not parse key val with arguments
-type ParseKeyValue<T> = RemoveALlWhiteSpaces<T> extends `${infer Key}:${infer Value}`
+type ParseSimpleKeyValue<T> = TrimWhiteSpaces<T> extends `${infer Key}:${infer Value}`
   ? {
-      key: RemoveALlWhiteSpaces<Key>
-      value: RemoveALlWhiteSpaces<Value>
+      key: TrimWhiteSpaces<Key>
+      value: TrimWhiteSpaces<Value>
     }
   : null
 
 type ParseSimpleKeyValues<T> = T extends []
   ? []
-  : ParseKeyValue<Head<T>> extends null
+  : ParseSimpleKeyValue<Head<T>> extends null
   ? ParseSimpleKeyValues<Tail<T>>
-  : [ParseKeyValue<Head<T>>, ...ParseSimpleKeyValues<Tail<T>>]
+  : [ParseSimpleKeyValue<Head<T>>, ...ParseSimpleKeyValues<Tail<T>>]
 
 type ParseRawGQLArgValueWithDefaultOption<T> = T extends `${infer DataType}=${infer DefaultValue}`
   ? {
       value: ParseRawGQLValue<DataType>
-      defaultValue: RemoveALlWhiteSpaces<DefaultValue>
+      defaultValue: TrimWhiteSpaces<DefaultValue>
     }
   : {
       value: ParseRawGQLValue<T>
       defaultValue: void
     }
 
-type ParseRawGQLValue<T> = GetMappedType<RemoveALlWhiteSpaces<T>>
+type ParseRawGQLValue<T> = GetValueType<TrimWhiteSpaces<T>>
 
-type GetMappedType<T> = T extends `${infer Type}!`
-  ? GetMappedArrayType<Type>
-  : GetMappedArrayType<T> | null
+type GetValueType<T> = T extends `${infer Type}!`
+  ? GetValueArrayType<Type>
+  : GetValueArrayType<T> | null
 
-type GetMappedArrayType<T> = T extends `[${infer Arr}]`
-  ? // recursion to optional arr type
+type GetValueArrayType<T> = T extends `[${infer Arr}]`
+  ? // recursion to optional arr type of optional value in the array
     ParseRawGQLValue<Arr[]>
-  : GetMappedBaseType<T>
+  : GetValueBaseType<T>
 
-type GetMappedBaseType<T> =
-  //
-  T extends 'String'
-    ? string
-    : T extends 'Int'
-    ? number
-    : T extends 'Float'
-    ? number
-    : T extends 'Boolean'
-    ? boolean
-    : T
+type GetValueBaseType<T> = T extends 'String'
+  ? string
+  : T extends 'Int'
+  ? number
+  : T extends 'Float'
+  ? number
+  : T extends 'Boolean'
+  ? boolean
+  : T
 
 // -------------------------------
 // ------ GQL Input type ---------
@@ -176,7 +180,7 @@ type ExtractGQLInputTypesAst<
   RootInputsObject = ConvertArrIntoObject<ArrayOfInputs, 'typeName'>,
   InputObjectsJustBody = {
     // @ts-expect-error
-    [X in keyof RootInputsObject]: RootInputsObject[X]['body']
+    [K in keyof RootInputsObject]: RootInputsObject[K]['body']
   }
 > = InputObjectsJustBody
 
@@ -193,7 +197,7 @@ type ParseRawInputTypeStrings<T> = T extends []
 
 type ParseRawInputTypeString<
   T extends { name: string; body: string },
-  TypeName = RemoveALlWhiteSpaces<T['name']>,
+  TypeName = TrimWhiteSpaces<T['name']>,
   BodyPropsKeyVal = ParseSimpleKeyValues<SplitByLines<T['body']>>,
   // @ts-expect-error
   InputsObject = ConvertArrIntoObject<BodyPropsKeyVal, 'key'>,
@@ -221,8 +225,6 @@ interface Node2 {id: ID!}g
 `>
 
 */
-
-
 type ExtractGQLInterfacesAST<
   T extends string,
   RawInterfaceStrings = ParseGqlInterface<T>,
@@ -234,17 +236,15 @@ type ExtractGQLInterfacesAST<
   // --- reuse input ends ----
   InterfaceObjectsJustBody = {
     // @ts-expect-error
-    [X in keyof RootInterfaceObject]: RootInterfaceObject[X]['body']
+    [K in keyof RootInterfaceObject]: RootInterfaceObject[K]['body']
   }
 > = InterfaceObjectsJustBody
-
 
 type ParseGqlInterface<
   T extends string
 > = T extends `${infer _Whatever}interface ${infer InterfaceName}{${infer InterfaceBody}}${infer Rest}`
   ? [{ name: InterfaceName; body: InterfaceBody }, ...ParseGqlInterface<Rest>]
   : []
-
 
 // -------------------------------
 // --------- GQL type ------------
@@ -254,7 +254,7 @@ type ParseGqlInterface<
 example T:
 
 type Test = ExtractGQLTypesAST<`
-  type XXX {
+  type TestType {
     title(
       limit: Int = 10
       offset: Int!, thirdArg: String
@@ -281,22 +281,22 @@ type ParseGqlTypes<
   T extends string
 > = T extends `${infer _Whatever}type ${infer TypeDeclaration}{${infer TypeBody}}${infer Rest}`
   ? TypeDeclaration extends `${infer TypeName} implements ${infer Implements}`
-  ? [
-    { 
-      name: TypeName;
-      body: TypeBody 
-      implements: Implements
-    },
-    ...ParseGqlTypes<Rest>
-  ]
-  : [
-    { 
-      name: TypeDeclaration;
-      body: TypeBody 
-      implements: null
-    },
-    ...ParseGqlTypes<Rest>
-  ]
+    ? [
+        {
+          name: TypeName
+          body: TypeBody
+          implements: Implements
+        },
+        ...ParseGqlTypes<Rest>
+      ]
+    : [
+        {
+          name: TypeDeclaration
+          body: TypeBody
+          implements: null
+        },
+        ...ParseGqlTypes<Rest>
+      ]
   : []
 
 type ParseRawTypeStrings<T> = T extends []
@@ -305,25 +305,25 @@ type ParseRawTypeStrings<T> = T extends []
     [ParseRawTypeString<Head<T>>, ...ParseRawTypeStrings<Tail<T>>]
 
 type ParseRawTypeString<
-  T extends { implements: any, name: string; body: string },
-  TypeName = RemoveALlWhiteSpaces<T['name']>,
+  T extends { implements: any; name: string; body: string },
+  TypeName = TrimWhiteSpaces<T['name']>,
   BodyPropsKeyValArr = ParseTypeKeyValuesWithArgs<T['body']>,
   // @ts-expect-error
   BodyPropsKeyValObj = ConvertArrIntoObject<BodyPropsKeyValArr, 'key'>,
   Body = {
     // now the GQL parser supports only 1 interface per type. No idea if real GQL supports more
     // TODO: check that + implement if yes
-    implements: T['implements'] extends null 
+    implements: T['implements'] extends null
       ? []
-      : MapArrayRemoveALlWhiteSpaces<SplitByAmpersand<T['implements']>>
+      : MapArrayTrimWhiteSpaces<SplitByAmpersand<T['implements']>>
     fields: {
-    // ---- gaga magic ----
-    [K in keyof BodyPropsKeyValObj]: {
-      // @ts-expect-error
-      args: ParserRawGQLTypeBodyArgsPropString<BodyPropsKeyValObj[K]['args']>
-      // @ts-expect-error
-      value: ParseRawGQLValue<BodyPropsKeyValObj[K]['value']>
-    }
+      // ---- gaga magic ----
+      [K in keyof BodyPropsKeyValObj]: {
+        // @ts-expect-error
+        args: ParserRawGQLTypeBodyArgsPropString<BodyPropsKeyValObj[K]['args']>
+        // @ts-expect-error
+        value: ParseRawGQLValue<BodyPropsKeyValObj[K]['value']>
+      }
     }
   }
 > = {
@@ -331,12 +331,12 @@ type ParseRawTypeString<
   body: Body
 }
 
-// pretty tricky parser which try to resolve if key: value has some args
+// Shitty tricky parser which try to resolve if key: value has some args
 // just by checking if the name includes `(` bracket character
 // BTW: there is duplicate code for simple non arguments key recursion :(
 // TODO: add better docs for this pice of shitty magic
 // TODO: what about to split to 2 function one for parsing infer value, second for spreading arrays?
-type ParseTypeKeyValuesWithArgs<T> = RemoveALlWhiteSpaces<T> extends ``
+type ParseTypeKeyValuesWithArgs<T> = TrimWhiteSpaces<T> extends ``
   ? []
   : T extends `${infer Key}:${infer Value}\n${infer PureRest}`
   ? // if include bracket => key has args...
@@ -344,31 +344,31 @@ type ParseTypeKeyValuesWithArgs<T> = RemoveALlWhiteSpaces<T> extends ``
     ? T extends `${infer KeyName}(${infer Args}):${infer ValByArgs}\n${infer Rest}`
       ? [
           {
-            key: RemoveALlWhiteSpaces<RemoveStartEndLn<KeyName>>
+            key: TrimWhiteSpaces<RemoveStartEndLn<KeyName>>
             // enable split args by
             // 1) new line
             // 2) comma
             args: ParseSimpleKeyValues<
               FilterEmptyItems<SplitByLines<JoinArrByNewLine<SplitByCommas<Args>>>>
             >
-            value: RemoveALlWhiteSpaces<ValByArgs>
+            value: TrimWhiteSpaces<ValByArgs>
           },
           ...ParseTypeKeyValuesWithArgs<Rest>
         ]
       : [
           {
-            key: RemoveALlWhiteSpaces<RemoveStartEndLn<Key>>
+            key: TrimWhiteSpaces<RemoveStartEndLn<Key>>
             args: []
-            value: RemoveALlWhiteSpaces<Value>
+            value: TrimWhiteSpaces<Value>
           },
           ...ParseTypeKeyValuesWithArgs<PureRest>
         ]
     : T extends `${infer Key}:${infer Value}\n${infer Rest2}`
     ? [
         {
-          key: RemoveALlWhiteSpaces<RemoveStartEndLn<Key>>
+          key: TrimWhiteSpaces<RemoveStartEndLn<Key>>
           args: []
-          value: RemoveALlWhiteSpaces<Value>
+          value: TrimWhiteSpaces<Value>
         },
         ...ParseTypeKeyValuesWithArgs<Rest2>
       ]
@@ -411,7 +411,7 @@ type ParseGqlEnums<
 
 type ParseRawEnumString<T> = {
   // @ts-expect-error
-  typeName: RemoveALlWhiteSpaces<T['type']>
+  typeName: TrimWhiteSpaces<T['type']>
   // @ts-expect-error
   body: FilterEmptyItems<RemoveItemStarEndWhiteSpaces<SplitByLines<T['body']>>>
 }
@@ -421,12 +421,8 @@ type ParseRawEnumStrings<T> = T extends []
   : [ParseRawEnumString<Head<T>>, ...ParseRawEnumStrings<Tail<T>>]
 
 // ----------------------------------
+// ------------ main ----------------
 // ----------------------------------
-// ----------------------------------
-// ----------------------------------
-
-// whole codebase extractors
-
 type GetGqlAST<
   T extends string,
   // GQLCodeComments = T,

@@ -5,8 +5,8 @@
 // ------------ utils ------------
 // -------------------------------
 export type Cast<T, U> = T extends U ? T : U
-type Head<T> = T extends [infer FirstItem, ...infer Rest] ? FirstItem : never
-type Tail<T> = T extends [infer FirstItem, ...infer Rest] ? Rest : never
+type Head<T> = T extends [infer FirstItem, ...infer _Rest] ? FirstItem : never
+type Tail<T> = T extends [infer _FirstItem, ...infer Rest] ? Rest : never
 
 type RemoveStartWhiteSpaces<T> = T extends ` ${infer T}` ? RemoveStartWhiteSpaces<T> : T
 type RemoveEndWhiteSpaces<T> = T extends `${infer T} ` ? RemoveEndWhiteSpaces<T> : T
@@ -18,7 +18,31 @@ type RemoveALlWhiteSpaces<
   T,
   T0 = RemoveStartWhiteSpaces<T>,
   T1 = RemoveEndWhiteSpaces<T0>
+  //
 > = T1
+
+/*
+test call
+
+type TestConvertArrIntoObj = ConvertArrIntoObject<
+  [
+    { id: 'id1', val: '1xxxx'},
+    { id: 'id2', val: '2xxxx'},
+    { id: 'id3', val: '3xxxx'},
+  ],
+  'id'
+>
+*/
+
+type ConvertArrIntoObject<
+  T extends { [K in Key]: string }[],
+  Key extends string,
+  ArrValues = T[number],
+  Keys = T[number][Key],
+  Obj = {
+    [K in Cast<Keys, string>]: Extract<ArrValues, { [key in Key]: K }>
+  }
+> = Obj
 
 // --------- Array-Lines utils ----------------
 
@@ -87,7 +111,6 @@ type ParseSimpleKeyValues<T> = T extends []
   ? ParseSimpleKeyValues<Tail<T>>
   : [ParseKeyValue<Head<T>>, ...ParseSimpleKeyValues<Tail<T>>]
 
-
 type ParseRawGQLArgValueWithDefaultOption<T> = T extends `${infer DataType}=${infer DefaultValue}`
   ? {
       value: ParseRawGQLValue<DataType>
@@ -95,7 +118,7 @@ type ParseRawGQLArgValueWithDefaultOption<T> = T extends `${infer DataType}=${in
     }
   : {
       value: ParseRawGQLValue<T>
-      defaultValue: null
+      defaultValue: void
     }
 
 type ParseRawGQLValue<T> = GetMappedType<RemoveALlWhiteSpaces<T>>
@@ -127,16 +150,28 @@ type GetMappedBaseType<T> =
 // ------ GQL Input type ---------
 // -------------------------------
 
+/**
+ * example calling:
+  
+type Test = ExtractGQLInputTypesAst<`
+input XInput {
+  a: Int!
+  b: Int!
+  c: String
+}`>
+
+ */
 type ExtractGQLInputTypesAst<
   T extends string,
   RawTypeStrings = ParseGqlInput<T>,
-  Splits = ParseRawInputTypeStrings<RawTypeStrings>,
-  MergeInputs = {
+  ArrayOfInputs = ParseRawInputTypeStrings<RawTypeStrings>,
+  // @ts-expect-error
+  RootInputsObject = ConvertArrIntoObject<ArrayOfInputs, 'typeName'>,
+  InputObjectsJustBody = {
     // @ts-expect-error
-    [K in Splits[number]['typeName']]: Extract<Splits[number], { typeName: K }>['body']
+    [X in keyof RootInputsObject]: RootInputsObject[X]['body']
   }
-  //
-> = MergeInputs
+> = InputObjectsJustBody
 
 type ParseGqlInput<
   T extends string
@@ -152,13 +187,12 @@ type ParseRawInputTypeStrings<T> = T extends []
 type ParseRawInputTypeString<
   T extends { type: string; body: string },
   TypeName = RemoveALlWhiteSpaces<T['type']>,
-  BodyPropsKeyVal = ParseSimpleKeyValues<SplitByLines<T['body']>>[number],
+  BodyPropsKeyVal = ParseSimpleKeyValues<SplitByLines<T['body']>>,
+  // @ts-expect-error
+  InputsObject = ConvertArrIntoObject<BodyPropsKeyVal, 'key'>,
   Body = {
     // @ts-expect-error
-    [K in BodyPropsKeyVal['key']]: {
-      // @ts-expect-error
-      value: ParseRawGQLValue<Extract<BodyPropsKeyVal, { key: K }>['value']>
-    }
+    [K in keyof InputsObject]: ParseRawGQLValue<InputsObject[K]['value']>
   }
 > = {
   typeName: TypeName
@@ -172,10 +206,12 @@ type ParseRawInputTypeString<
 type ExtractGQLTypesAST<
   T extends string,
   RawTypeStrings = ParseGqlTypes<T>,
-  Splits = ParseRawTypeStrings<RawTypeStrings>,
+  TypesArr = ParseRawTypeStrings<RawTypeStrings>,
+  // @ts-expect-errors
+  TypesObj = ConvertArrIntoObject<TypesArr, 'typeName'>,
   MergeTypes = {
     // @ts-expect-error
-    [K in Splits[number]['typeName']]: Extract<Splits[number], { typeName: K }>['body']
+    [K in keyof TypesObj]: TypesObj[K]['body']
   }
 > = MergeTypes
 
@@ -190,26 +226,39 @@ type ParseRawTypeStrings<T> = T extends []
   : // @ts-expect-error
     [ParseRawTypeString<Head<T>>, ...ParseRawTypeStrings<Tail<T>>]
 
+/*
+example T:
+
+type Test = ParseRawTypeString<{
+  type: 'xxx'
+  body: `
+    title(
+      limit: Int = 10
+      offset: Int!, thirdArg: String
+    ): String!
+    author: Float!
+    `
+}>
+ */
 type ParseRawTypeString<
   T extends { type: string; body: string },
   TypeName = RemoveALlWhiteSpaces<T['type']>,
-  // key val can have more lines it you have multiline args
-  BodyPropsKeyVal = ParseTypeKeyValuesWithArgs<T['body']>[number],
+  BodyPropsKeyValArr = ParseTypeKeyValuesWithArgs<T['body']>,
+  // @ts-expect-error
+  BodyPropsKeyValObj = ConvertArrIntoObject<BodyPropsKeyValArr, 'key'>,
   Body = {
     // ---- gaga magic ----
-    // @ts-expect-error
-    [K in BodyPropsKeyVal['key']]: {
+    [K in keyof BodyPropsKeyValObj]: {
       // @ts-expect-error
-      args: ParserRawGQLTypeBodyPropString<Extract<BodyPropsKeyVal, { key: K }>['args']>
+      args: ParserRawGQLTypeBodyArgsPropString<BodyPropsKeyValObj[K]['args']>
       // @ts-expect-error
-      value: ParseRawGQLValue<Extract<BodyPropsKeyVal, { key: K }>['value']>
+      value: ParseRawGQLValue<BodyPropsKeyValObj[K]['value']>
     }
   }
 > = {
   typeName: TypeName
   body: Body
 }
-
 
 // pretty tricky parser which try to resolve if key: value has some args
 // just by checking if the name includes `(` bracket character
@@ -237,9 +286,8 @@ type ParseTypeKeyValuesWithArgs<T> = RemoveALlWhiteSpaces<T> extends ``
         ]
       : [
           {
-            // ugh: '_-----'
             key: RemoveALlWhiteSpaces<RemoveStartEndLn<Key>>
-            args: null
+            args: []
             value: RemoveALlWhiteSpaces<Value>
           },
           ...ParseTypeKeyValuesWithArgs<PureRest>
@@ -247,44 +295,27 @@ type ParseTypeKeyValuesWithArgs<T> = RemoveALlWhiteSpaces<T> extends ``
     : T extends `${infer Key}:${infer Value}\n${infer Rest2}`
     ? [
         {
-          // ugh: '_pure-'
           key: RemoveALlWhiteSpaces<RemoveStartEndLn<Key>>
-          args: null
+          args: []
           value: RemoveALlWhiteSpaces<Value>
         },
         ...ParseTypeKeyValuesWithArgs<Rest2>
       ]
     : []
   : []
-  
-type ParserRawGQLTypeBodyPropString<
+
+type ParserRawGQLTypeBodyArgsPropString<
   // TODO: T should be only arg, not whole body
-  T extends string[],
-  // TODO: add better names
-  ArgKeyVal = T[number],
+  T extends { key: string; value: string }[],
+  BodyPropsObj = ConvertArrIntoObject<T, 'key'>,
   T0 = {
-    // TODO: add gql arg default value
-    // @ts-expect-error
-    [KK in ArgKeyVal['key']]: ParseRawGQLArgValueWithDefaultOption<
+    [K in keyof BodyPropsObj]: ParseRawGQLArgValueWithDefaultOption<
       // @ts-expect-error
-      Extract<ArgKeyVal, { key: KK }>['value']
+      BodyPropsObj[K]['value']
     >
   }
 > = T0
 
-type BBody = `
-title(
-  limit: Int = 10
-  offset: Int!, omg: String
-): String!
-author: Float!
-age: In
-`
-
-type XX = ParseRawTypeString<{
-  type: 'xxx'
-  body: BBody
-}>
 // -------------------------------
 // --------- GQL enum ------------
 // -------------------------------
@@ -292,12 +323,13 @@ type XX = ParseRawTypeString<{
 type ExtractGQLEnumsAST<
   T extends string,
   RawTypeStrings = ParseGqlEnums<T>,
-  Splits = ParseRawEnumStrings<RawTypeStrings>,
+  SplitsArr = ParseRawEnumStrings<RawTypeStrings>,
+  // @ts-expect-error
+  EnumsObject = ConvertArrIntoObject<SplitsArr, 'typeName'>,
   MergeEnums = {
     // @ts-expect-error
-    [K in Splits[number]['typeName']]: Extract<Splits[number], { typeName: K }>['body'][number]
+    [K in keyof EnumsObject]: EnumsObject[K]['body'][number]
   }
-  //
 > = MergeEnums
 
 type ParseGqlEnums<
@@ -326,8 +358,8 @@ type ParseRawEnumStrings<T> = T extends []
 
 type GetGqlAST<
   T extends string,
-  GQLCodeComments = T,
-  // GQLCodeComments = RemoveGQLComments<T>,
+  // GQLCodeComments = T,
+  GQLCodeComments = RemoveGQLComments<T>,
   GQLInputTypesAST = ExtractGQLInputTypesAst<Cast<GQLCodeComments, string>>,
   GQLTypesAST = ExtractGQLTypesAST<Cast<GQLCodeComments, string>>,
   GQLEnumsAST = ExtractGQLEnumsAST<Cast<GQLCodeComments, string>>
@@ -346,19 +378,16 @@ enum OrderByKeyword {
 type Mutation {
   contactForm(
     input: OrderByKeyword!,
-    
   ): ContactFormResType
 }
 type Query {
+  age: Int
   title(
     limit: Int = 10
-
-
 
     offset: Int!, thirdArg: String!
   ): String!
   author: Float!
-  age: Int
 }
 input Pagination {
   value: String
@@ -367,6 +396,6 @@ input Pagination {
 
 type ParsedGraphQL = GetGqlAST<typeof typeDefs>
 
-type Types = ParsedGraphQL['types']
+type Types = ParsedGraphQL['types']['Query']['title']
 type Enums = ParsedGraphQL['enums']
 type Inputs = ParsedGraphQL['inputs']

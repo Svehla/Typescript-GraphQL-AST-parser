@@ -21,6 +21,9 @@ type RemoveALlWhiteSpaces<
   //
 > = T1
 
+type MapArrayRemoveALlWhiteSpaces<T> = T extends []
+  ? []
+  : [RemoveALlWhiteSpaces<Head<T>>, ...MapArrayRemoveALlWhiteSpaces<Tail<T>>]
 /*
 test call
 
@@ -69,6 +72,12 @@ type SplitByCommas<T extends string> = T extends ``
 type SplitByLines<T extends string> = T extends ``
   ? []
   : T extends `${infer A}\n${infer B}`
+  ? [A, ...SplitByLines<B>]
+  : [T]
+
+type SplitByAmpersand<T extends string> =  T extends ``
+  ? []
+  : T extends `${infer A}&${infer B}`
   ? [A, ...SplitByLines<B>]
   : [T]
 
@@ -144,8 +153,6 @@ type GetMappedBaseType<T> =
     ? boolean
     : T
 
-// ----------------------------------
-
 // -------------------------------
 // ------ GQL Input type ---------
 // -------------------------------
@@ -176,7 +183,7 @@ type ExtractGQLInputTypesAst<
 type ParseGqlInput<
   T extends string
 > = T extends `${infer _Whatever}input ${infer InputName}{${infer InputBody}}${infer Rest}`
-  ? [{ type: InputName; body: InputBody }, ...ParseGqlInput<Rest>]
+  ? [{ name: InputName; body: InputBody }, ...ParseGqlInput<Rest>]
   : []
 
 type ParseRawInputTypeStrings<T> = T extends []
@@ -185,8 +192,8 @@ type ParseRawInputTypeStrings<T> = T extends []
     [ParseRawInputTypeString<Head<T>>, ...ParseRawInputTypeStrings<Tail<T>>]
 
 type ParseRawInputTypeString<
-  T extends { type: string; body: string },
-  TypeName = RemoveALlWhiteSpaces<T['type']>,
+  T extends { name: string; body: string },
+  TypeName = RemoveALlWhiteSpaces<T['name']>,
   BodyPropsKeyVal = ParseSimpleKeyValues<SplitByLines<T['body']>>,
   // @ts-expect-error
   InputsObject = ConvertArrIntoObject<BodyPropsKeyVal, 'key'>,
@@ -198,6 +205,46 @@ type ParseRawInputTypeString<
   typeName: TypeName
   body: Body
 }
+
+// -------------------------------
+// ------ GQL interfaces ---------
+// -------------------------------
+
+/**
+ * example calling:
+  
+type Test = ExtractGQLInterfacesAST<`
+interface Node {
+  id: ID!
+}
+interface Node2 {id: ID!}g
+`>
+
+*/
+
+
+type ExtractGQLInterfacesAST<
+  T extends string,
+  RawInterfaceStrings = ParseGqlInterface<T>,
+  // --- reuse input starts ----
+  // we reuse logic from GQL input type which has same body structure as Interface body
+  ArrayOfInterfaces = ParseRawInputTypeStrings<RawInterfaceStrings>,
+  // @ts-expect-error
+  RootInterfaceObject = ConvertArrIntoObject<ArrayOfInterfaces, 'typeName'>,
+  // --- reuse input ends ----
+  InterfaceObjectsJustBody = {
+    // @ts-expect-error
+    [X in keyof RootInterfaceObject]: RootInterfaceObject[X]['body']
+  }
+> = InterfaceObjectsJustBody
+
+
+type ParseGqlInterface<
+  T extends string
+> = T extends `${infer _Whatever}interface ${infer InterfaceName}{${infer InterfaceBody}}${infer Rest}`
+  ? [{ name: InterfaceName; body: InterfaceBody }, ...ParseGqlInterface<Rest>]
+  : []
+
 
 // -------------------------------
 // --------- GQL type ------------
@@ -229,10 +276,27 @@ type ExtractGQLTypesAST<
   }
 > = MergeTypes
 
+// TODO: add implements keyword support
 type ParseGqlTypes<
   T extends string
 > = T extends `${infer _Whatever}type ${infer TypeDeclaration}{${infer TypeBody}}${infer Rest}`
-  ? [{ type: TypeDeclaration; body: TypeBody }, ...ParseGqlTypes<Rest>]
+  ? TypeDeclaration extends `${infer TypeName} implements ${infer Implements}`
+  ? [
+    { 
+      name: TypeName;
+      body: TypeBody 
+      implements: Implements
+    },
+    ...ParseGqlTypes<Rest>
+  ]
+  : [
+    { 
+      name: TypeDeclaration;
+      body: TypeBody 
+      implements: null
+    },
+    ...ParseGqlTypes<Rest>
+  ]
   : []
 
 type ParseRawTypeStrings<T> = T extends []
@@ -241,18 +305,25 @@ type ParseRawTypeStrings<T> = T extends []
     [ParseRawTypeString<Head<T>>, ...ParseRawTypeStrings<Tail<T>>]
 
 type ParseRawTypeString<
-  T extends { type: string; body: string },
-  TypeName = RemoveALlWhiteSpaces<T['type']>,
+  T extends { implements: any, name: string; body: string },
+  TypeName = RemoveALlWhiteSpaces<T['name']>,
   BodyPropsKeyValArr = ParseTypeKeyValuesWithArgs<T['body']>,
   // @ts-expect-error
   BodyPropsKeyValObj = ConvertArrIntoObject<BodyPropsKeyValArr, 'key'>,
   Body = {
+    // now the GQL parser supports only 1 interface per type. No idea if real GQL supports more
+    // TODO: check that + implement if yes
+    implements: T['implements'] extends null 
+      ? []
+      : MapArrayRemoveALlWhiteSpaces<SplitByAmpersand<T['implements']>>
+    fields: {
     // ---- gaga magic ----
     [K in keyof BodyPropsKeyValObj]: {
       // @ts-expect-error
       args: ParserRawGQLTypeBodyArgsPropString<BodyPropsKeyValObj[K]['args']>
       // @ts-expect-error
       value: ParseRawGQLValue<BodyPropsKeyValObj[K]['value']>
+    }
     }
   }
 > = {
@@ -281,7 +352,6 @@ type ParseTypeKeyValuesWithArgs<T> = RemoveALlWhiteSpaces<T> extends ``
               FilterEmptyItems<SplitByLines<JoinArrByNewLine<SplitByCommas<Args>>>>
             >
             value: RemoveALlWhiteSpaces<ValByArgs>
-            rest: Rest
           },
           ...ParseTypeKeyValuesWithArgs<Rest>
         ]
@@ -363,15 +433,19 @@ type GetGqlAST<
   GQLCodeComments = RemoveGQLComments<T>,
   GQLInputTypesAST = ExtractGQLInputTypesAst<Cast<GQLCodeComments, string>>,
   GQLTypesAST = ExtractGQLTypesAST<Cast<GQLCodeComments, string>>,
-  GQLEnumsAST = ExtractGQLEnumsAST<Cast<GQLCodeComments, string>>
+  GQLEnumsAST = ExtractGQLEnumsAST<Cast<GQLCodeComments, string>>,
+  GQLInterfacesAST = ExtractGQLInterfacesAST<Cast<GQLCodeComments, string>>
 > = {
   types: GQLTypesAST
   enums: GQLEnumsAST
   inputs: GQLInputTypesAST
+  interfaces: GQLInterfacesAST
 }
 
 const typeDefs = `
-# Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
+interface Node {id: ID!}
+# input CommentedPaginationPOC { input: Int! }
+input Pagination { value: String }
 enum OrderByKeyword {
   ASC
   DESC
@@ -381,7 +455,7 @@ type Mutation {
     input: OrderByKeyword!,
   ): String
 }
-type Query {
+type Query implements Node & Node2 {
   age: Int
   title(
     limit: Int = 10
@@ -390,12 +464,11 @@ type Query {
   ): String!
   author: Float!
 }
-# input CommentedPaginationPOC { input: Int! }
-input Pagination { value: String }
 `
 
 type ParsedGraphQL = GetGqlAST<typeof typeDefs>
 
-type Types = ParsedGraphQL['types']
+type Interfaces = ParsedGraphQL['interfaces']
+type Types = ParsedGraphQL['types']['Query']
 type Enums = ParsedGraphQL['enums']
 type Inputs = ParsedGraphQL['inputs']

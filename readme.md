@@ -11,21 +11,22 @@ This repository is just my fun project where I demonstrate power of typescript b
 ## Preview
 
 
-you can interactive play with the TS-GQL parser [there](https://www.typescriptlang.org/play?target=1#code/PQKgBApgzgNglgOwC4FoAmcoEMBGMJgC2WAHivgmCMALABQoksiqG2eBAAkgJ4AO0AMYAnOH1TR4yYAgD2KAK4IFUCGhQA3LMKhVadesGBgUps+YuWrZw8evmwCpHBi77Nhnfff79CCT5ZYSQwXgEwAGEsKCQAHgAVABowAFUAPjAAXjB4yBIkCAQ0XRSwAH4csAAuVPowggAJCCw0BIzs3P8Cot0AbUQAMwhhMAAxOB0kAEkCwmSAOkXB4bAAfQAlaCQAXXKxiZiZiEJqsAQIDWG6-gJ4rBc2rMquwuKwfoQhkdXxyaO5sCLebLEabGK7CpgkI1c6XYT0a7hTaEWSXADKSG0SAA6gALOAFNF8LCCaCPDp5bpvAAGYAAJABvEE5AC+tMhx1REAxWLxBO5xNJUEeNXiiIIyK5AFEinzCYKyfF2s98q9dNTGcz4iywOywJLLjK0HKBSTFRlRQi6PV9Zz0ZjgkaADIIckqqnqgA6CE1nxW2r1Bu5DqQztdStOYs8oRutpRhqKYbdnVVPV1vq+rO9gbtECNSYjloM1tjQYAgk6YCaiWbhfQwDlEvWcgAGJ5BnnBasK4VKpt0BvxACM7dzRu7tYSLbSzaM9GVw6toDqWzAgiwMBgVpt8S2EVkCDhSDLwmEU2QsgA8jgAFZPfeH4bH0-npBX28QQRxZu9ZsNhlgHAaA1AA5EBQ4gckWgwKBQ4kPBJAgSy-YNv+gHAWAYFoAATJBYDQaB2EIYhyF-mAAFAaBQEAMx4QRmHUcRSEoWA2wsVhIHzvQ1DbrGD5HieZ4XteN6ft+A7umq5HvAA0oBlAyRAPDbDUMSiAgADmYAsr0bHNopPCUlJamIBpLGCQAahuCjQE88S9MohA4MMekSQZugdA5ChOS5vQGa5DYiU8DJkX58mRNEcTuckJmaWkKlgFK+TCCScSWdZ0DJABvQANZKeF-k1HJLIzhJLLzk8IlLl4VhgIJWA8CgTqILZTguG4PgeOKcZcv8nbjvi8qThGFIvGmunNhUE0STUv4SahPUJsag2mkKsQdiGE5rU0LRtGkaQsQtQJBn1DoDfyNZrXcDxKqVC3bLx4TjDABTCFKhDiDw-y9guRnjRC7y7DUO2tBGY1vCBIF7NdMAiu8INtAsiww20D3FjaABSsiIIJABCPAAHIQAA7s15zJn9bzTQ2FSQ82NRGGA3BQCg-gCF+rOnkE5RlLzZEagyCNKiy3qMljOOnvjROky1CT3LDt1so9BBEvASD4-uhDEL2lO6LFGm-eD6rUpNgP05JaYC8yZbIRmKy40rElTWWSPzKrBL42TZK4-F5u9PEaPde76s8F7OtG2A+uG6mNIm07ZszRbNJ2yMNui0yfojA7cc0+8LuAosweey1wo+2jDazQH1UmJ1tceIz9hrrIWuFEgHXuLYNd17XyuLRAADiACKTqa4Qrd1hJKYepHSDqWZzZh08RehyXiMLyX2IErishOATsgFB5fde52UDYjMuINNEuJ3BpsRhwdzYRPg2hqIPNnCIZ2TiwgeOEyTXt3w3lvHeSA94H1KsqJ+zRhCv3fjwXuUwoDHxDKfLel8oDXywLfEaSd1QAGIU5gAABpsj2LPGypwBgblUN1IeTovaINHq3BIyR4htmyBtXkK1LrmlYSObIiDkFYlQUgC+V8b5Tn2nZIcvcgxCJ0GfUR6DMHYOjtPamewNE1DoQwqATDkCxCFlIiO5CICmzkS1E+iixEYIkSjW6fsjGuwsecKx59lF2PlntQO0ZG50LqmiXIAAFbQqgdBdysJ3bu0SUBRPcPhDKYBiQ6BWL4XxMS67V3iPiXQGlCjDDgIIMAaBZC2TkCEZJqgwB5UMtBMAxMt5gG0Bpby49uohJSQZKyMAbJunLJWLa5pdbpgzpmAyLIqiEO6TZR2ucQrzVQjUmo-SqzcJ7LEAyd0FoJJ6RAZZuYKyrIuus6ZEAtkNnKonZQm5e4dNUGiOAH18BdIyj9OywyNFTXLqcO5EAXm7MMc0UGxiY66GuVueOvyHlPL+UpU5vYvEOMTr0X5-zelGIOgXeYULHl8GeXC15csbr7R8TaX56wsDEzoSeDSpzN6iIACIQCoQoF6l5xBwAPBTCOVtM5gAZVgTE8QbgskyIQplLKXqnNmXseZ2ydk2RqOSyldDTmxAFUKm45zUJoGZVgVlSBTn7PjBAQ5gzhQSv1VKjK2rLkV3ImRBs0FFVgGVVS4eaqlSOuKXqg1Rr8LYzQGRS57TQkQApe6p0nrlT9wgEgAAslgPgAg0DCoEOtA5Ay1nDX2r3WNCak0prTRAbloKRlahFQAQhznsfNibk1qHqjwYtCQtXmzrYWxtp4GotojAAHzOKyiFtC431pTU23taipLUl6IQwSLJtg1oqIzGBggFA6E5ZQN8YBZAcoPBuJpp4YwCDIm61VGVYiCV0ls7Ro7O1oFxtECAk6813obQ+p9k6sizn0IOYZIEMRz04gsio+syKin-a+YDC0KiOWcvCBZEGI4gVGDAWQgroOoVg95eD4HcGYVxrIWQz8ECYdzjgIjJG8NRjiRkzq1c6PeFo2YMA-jzx8CcMeggaSG6MbSYYEAIB6zgH8FgGFa4NxSA0lUZs3VdwxCeElWeqU6HsacMWqAZYYixDjogDjIQiFqZCHKppNRXyVubDgMzyALMSUEDUQDpl6BslKsJ-QNolMpS-KphA+mNNafEn+iO+sWIRuLY5zSh9fn9wAI4wCM2vCSTbLwDCM1FsNEajPhdnqZYUYWbgRY0lAB+ElGbM1ZgEMSnNhBBGbOsIj0xfNOCgCJMS94DwCRfMJD8X5L3dp4CltLyQQL1AJmJiAIESsNiM61r8UAMYqHVrINAn8HULLK23Cr7MJBcwQwtXoRDwo1NkAMfUDW0uzZ2Ms87TW26XYO9sXoIEKMrZAt8y5yoZs9bbgtmIhGVu3LDbF+Lt3YjNinsZHLmkKqjTLbyzMqw8SCouMMFkenOOEKM2NseLIGSY9u-9ngLIWSEKhDKqaAF6jWf09jiAABuMAL2eDU6cIT7SrtotxYS1CX2yLSWxjdVlgrUOiulvUd8r55sNsszZlV4YNW9uoRRRlylQuBCFcBbtW6HOVfEzV8GOeCLiW89DSkzLt3stzzB5PYZlObiqRFwzpnDu57s-BzcWno4TVmuzVdJ79Q3tTbAIToJNW+BQH+U8HFMK0VkmXmHBIT2meB6D9LrbcvdvNgu999rj5giCVfO+USvWQ9h4jwSmAw2amTZYmz7IJmGxp9lxzeXtWFlhUQNUpSJ2wDZ+L1d11uvz0Ar72JPyj2QLOom9sLZH3grNlG+N0UHvxuWeW8z4P6-nMMb49YZjFhWPDy4xEvf6Td+WCXEJugonxPxBk+jWM8mQjZE8yp4e-nAk6YX7GIhv+1sLWcCQHwAAApvV4BCACRrNn8wAhwWxvUTsBhVAkAoDK1khREJg0AaUHMRcyIABKbAueWzBafVURIIGoVDdDJAIg7SegakO6HiB-cIV-bzd-G4TTT-cHYZELOrSlS3XLKPIHOLDTRLQcNgwSAQs3Xg4XQ3daKQ9XEXYrFiJvSrFvXbKAd3AQFrW8XPTrISN8S7VtTQwSYbRfMeGvZseNYYPJDTefdbYwcrZvHbBXUKOSTvY7U7DTESBKTw28cfJPdfN7ZsOfbISw4QawtgwHFJYHYQzg4LHAugKdS2QhRHXEZHOEFkG0QhYtJlQQGAbQQVTdXHLIm4QnYnUnLYcnd4O3AQZfAQHIvIlKZwA8J3dfWoiANnZCLFTnGAYQnnb5WafncIN1PgyLMXKST5BOe1ZQ7barNvfbYY6Q0yTXYFTFIEBY+QmQ+xElSI1QfLDYpY2IstaovZGeOeFolbF3UyN3SeFfMeL3LkH3Y5Yaf3G4QPWvdfUPXdcvHgbpcQ7IX5YtWPERXEGlXsfw17GfJQ+wzbRw2YxXUvL4-5IKbIfiJ8AvbrfvWIBE8Pf5YwzCavIPOvf-VCXjUwMADSLBLAIgLBQpCJFwo7bvU7bE747pLwmoBvEk6EmXFQpwuY7ZZpKAJVMNYQCNOhYtQnUEz4vgDXZkpE3wmSCfAUwPb1aYjPZwhZJ1DKIUyQyNNVWUivESPwyfDKZUhZO1GghI2whsUwk44tWnNfC4zfAHOgENaMPgGBJAXgUIUQQQHKQySpFYYmfEQQXEb0wybdGBKAYjS4QCU7JZBVAgVIvWZuAgAUzuG8RbRnQyEMz8HKK4uAU7URAgBAcbeSXIhQXVdUYA2kHALzPKEIEM-Ir8K4aMXGeIbEGoIsmBQCXQNABQPFQpZHJuXVMAAYbmKAXFfAM4A8Q9FpMeZAXQGpMAVdddCcmcqoUA6MeIS8BlS8GoFoNARnONV6YpWQQQXQMckYdA3QPgQpAgHvDBAkL04gDSQpTubc3cmoIMwVJpCjTjbdKAAckIbdbCUcpQL8TdHdc4Uc7mSpfMvlKfGKT8A8Q8y8yOd0oFK47QFKHgKAMoU3VQQEivGyYE0EvpTNI5IaK6DIHlJdSYyMYZeHFYcZSZUZFYaVdOZkIJddcNCouixmAsssnpEc2skkesrIDIJcpM2cqAIEMiAyRiwhJHJAIcFkYAudMIqAGVXOCHJItikYAyWnNSjSorFkfAqZDcfGUEkWH0fS20GIbSrDd4b1BaDk+VBseMlZc1DNE1TsUMIoF0DZJSWnXNDU9yxmQoXAKcwCtWGSrMly7ZRmIcXAs4EmMAKQMxMK+VRmbCFKwQZuYgBK4gzS7U+5Sc2FH4wlIq7ZZ6V6d6T6b6WIePVeb+X+aWABZeUeaIPrIrfaUK9y7ZbVAaqfY1B4rNJ4tabpKyzSoa9yyM5A+ypAaq0iLK1CNYsNIiyq3ZUizSjNGIWahsb5BaWaaqty9yzyii7yzhR0AK10TZA6-kkq+igazU3ZUay4R4qiskU5B6i5Q6dy9alJTa+FelEE3a7imBHnBKo6hinlQhFiiy3ZGy8omIbCRyqaBKs6haC673car6vLXMPypMe66qgUgY6qkavuT61ab6m1BKlagawGwim4IE0GsiqEbCWamG8mvnHY4YUU1ggQCUzSqUjXH9HIHcvcyoDBHeGAQ85yKCmAQyZpZIcpepbeKcpnQ46eACeM-WBnSm-WbSXSd4lbKUrQu8FEjrNErrfQ77FhfEpScwyedhYkhsDvSgdwp0ngc2tkwfHU6lMIulLeS1A1dlJo10FUrk9PVQ9U+VZkw0hUp7KfQIhZWfGHVsHfc-CwffBwfxQobyE-SJM-bOrqEsJg5KN-J0GUbydg+Ia3ILMtbgiSPYg3fg-4wQmAGuwgH6FiYOTTI9DunU7uwrPLOQtuyLVPaO2E1vRXbui2trK2vPZ8PQovMSJqoCge4QEw24ibIPUIvJeeq0zkpmGEnkuE+ktwxkxKRyBer8BKee+7JO57AIx7ODFyIIjOg+vMW+vm4Heehu-DMDS02HaeJi74ZSlHYQFkAuk4QhbuoyvHOy7u0oknOysnOi3oY4moBB8bc4jfFB9fdnLozugBvov2QYggN1EekXN0EzVU2Ovkm09601PGmmsEkbV4mfcWhw8+2eh0jfWq4Yeq3gRqk6WYfqWUX3OPIC4uc4Dh5PGfUK10slXXGhzYxIqmCXei2aahxyDXDFHXYe-RhQolBWbY4sUk0unOku6x+uGqOx+xouux6uIM4jAgfK3VHAJ9SkLzN8HQV9JAYHMsDgm3OIueKEw-EeZbCAfRNuOyFiOhfcXVOJw+IMJJgq8eEQqJ-XOuxTSulgp0XJgLWIKIbTDJlJzJhcmKEXfaRJwW6AEJ3IF-ApoJhpuu0pyKWICp2JqptuGpueOp5sOheepp-J5TQp0Zz-MpuIHp1JgZ0yUK5UEzeoQUqJj-KMBsWBtZkZ2+pp5sdHNubRYeYpwJbfYsfKhABTeoCVQ+OOPBSIPp3QTvfuFKPgXEI-fWXQYAqABQEMppXQa8qCiAFKmILEepRpIssAJM0M4AvBUFngJyYjeYPwRyMAS8YQXVYQfGAyYmIIQ8kzEJiIZsBlKUNEYll07qeNJwAomckzS5zEL8UYIIQgTchaQ5moDFrFnFpSPFzF1A5sfAsAQrc5m0N+YYQyEzLBE418BfAkEAsicAyA3vZAJ4WAq0BaBApAlAtA-ETFrA4VkXagoVwragkg7eYQcgtDQVWzS5B5w5x5luZANQEJV8ksiOoJS8CIaSDllVqgi0h111xAWlygACSmwrC0uOAitQV5pND5p0J4fNYJz-eoHvG55lYrXuGwoe1QNAWN954eF4zQ1OjzW+iQ3N-N+Np7bZkt2MNLctmNt5qtsCW7KAVOoAA)
+you can interactive play with the TS-GQL parser [there](https://www.typescriptlang.org/play?target=1#code/PQKgBApgzgNglgOwC4FoAmcoEMBGMJgC2WAHivgmCMALABQoksiqG2eBAAkgJ4AO0AMYAnOH1TR4yYAgD2KAK4IFUCGhQA3LMKhVadesGBgUps+YuWrZw8evmwCpHBi77Nhnfff79CCT5ZYSQwXgEwAGEsKCQAHgAVABowAFUAPjAAXjB4yBIkCAQ0XRSwAH4csAAuVPowggAJCCw0BIzs3P8Cot0AbUQAMwhhMAAxOB0kAEkCwmSAOkXB4bAAfQAlaCQAXXKxiZiZiEJqsAQIDWG6-gJ4rBc2rMquwuKwfoQhkdXxyaO5sCLebLEabGK7CpgkI1c6XYT0a7hTaEWSXADKSG0SAA6gALOAFNF8LCCaCPDp5bpvAAGYAAJABvEE5AC+tMhx1REAxWLxBO5xNJUEeNXiiIIyK5AFEinzCYKyfF2s98q9dNTGcz4iywOywJLLjK0HKBSTFRlRQi6PV9Zz0ZjgkaADIIckqqnqgA6CE1nxW2r1Bu5DqQztdStOYs8oRutpRhqKYbdnVVPV1vq+rO9gbtECNSYjloM1tjQYAgk6YCaiWbhfQwDlEvWcgAGJ5BnnBasK4VKpt0BvxACM7dzRu7tYSLbSzaM9GVw6tNoAslg+GXhMIsDxy5WJ0Lk5S1e9ts2Kr1TwPTr1d1X8fLJ00Wm00gtFqv15vt7f94r7jAX0vUA6i2MBBCwGAYCXWN4i2CJZAQOEkA3YQpmQWQAHkcAAKyeeDEOGZDNzQpBMJwiBBDiZtembBsGTAOA0BqAByRih2Y5ItBgFihxIPiSGYll+wbOiGKYsBWLQAAmDiwC4lipP4gShNosB6MYljGIAZlk+SJK0pTBOEsBtmMyTmPnehqGg8J8KQlCSLI7CKKoq8Uw9NT3gAaQYygvIgHhthqGJRAQABzMAWQvYz-J4I80xCxAwuMlCADUIIUaAnniXplEIHBhlM5tYt0DpcoUfLCt6WKiqvLDcOyBlVOq3zImiOISuSRLwrSIKwClfIt0o2I0oy6Bkno3oAGsAtamqah8lkZyvFl5yeeqrSMExrDAFDtxQJ1ECypwXDcHwPHFOMuX+Ttx3vU0DwjCkXjTC8zxPZsahoq8RKuhNjXumsDw7ENf2FJ9WiVNJX1UhsgSDG6HTu-kgb-B4odUy9LvGGACmEKVCHEHh-l7Bd4reC89kpmoIceF63mY5i9judGLXeWm+0BRYWYApUsZLcIAClZEQFCACEeAAOQgAB3Q7zkPem+kvBsKkZz6wC27goBQfwBEo3XNyCcoylN1SNQZDm0hZb1GWF0XNwl6W5aOhJ-xfNkbIIIl4CQCX4MIYhe3J3RurCsmld1al3req9RRD9MmT9EYyyEjMVjFz2r3PMs33mH2CQl+WyTF3qNd6eJ+ZtAu-Z4Yvg8jsOI9TGlo+zj64-dY8LeZVPbaTzNM7b1X3lzrn874X2i6O4VS5V69K69sAa4lstCeGbAigSBOm6eLu02pYeqfn+PI575PdpZAAydORiHmOx6BFe65n2I5-Lxfiy286f-MWxtqsGBWQgdChIDOu4f+v8oFLyDAAcQAIpOgDoQUBdY3I7yQKFZKzZ65PGfvXNoxl67YgJLiWQThJayAKKVP6EBi6digNiGYuIGjRFxHcMKsR64wyvBEfA2g1DwMysIOK2R7YIHFlLWWxcuEzxIUgMhFCqHQGWsqPhzRhCCOETwJeUwoD0JDIw0hrCoDsKwJwp6+8aQAGJb5gAABpsj2JgzKpwBgQVUJdBBTpi56OQaAhIyR4htmyCDXkgMeyEJyCObIeiDFYiMQokxZiLHTgXEOGBuZ4k6CYUkthHDFYt2VjHE+YBvG+KgP45AsQrYZEji4iA70gzZMYcw5JBSeYvnLlbPOzSjoMNySw-J5i3aszLl-LwgDvG7TRLkAACtoVQOgAFWEgVA9Zaz7ByTGmAYkOgVi+GjOsjZEycj4l0GFQoww4CCDAGgWQWU5AhD2aoMAM04pcTADLUhYBtBhQqqgy6Cz9mxXSjATKbofwRMnBGM+djYosiqHYsFmUs4jyaj9ES7yahQpRpE2Ky1foNi4plHFuYKx3jxZOFFEBCUiVWp3ZQkEl7AtUGiOAhN8CgrGqTbKCdY4jwFacVlEBuXgogDU5okNoYJyZVBduIr2WctFQFGlvZ3YY07r0EVYqIW1Lzoqjlk8VU8DVaM3m0Mq6xhFesLAMtvEbjCjS+RuIAAiEB3EKFxhhcQcAEKFI8ufTMrqsCYniDcFkmQ7Hus9bjGlaK9gYqJds8VNQbV2u8TS2IIaw03Dpb9NAHqsBeqQDSsl8YIAUrBtmotJaaX5sihrJNRKSUQDTYsiAtr7WIKzUqWGdza1xrGjUDQIs0CqQZUCjtXbM1jTdLAiASAPwCDQOGgQsRcUPketDJeC6l1rhXWuiVlj3LdzsUelkABCI+FQ93LrUHtHgR6Eh5o1neg9D6vxPpuI8AAPmcL18qvGLvvWgR9z6T0J2pL0OxKEWTbBvZrYwmjBAKB0H6ygpEwCyF9QhCCvzNwxgEKpdN3anRZpQheOlNR318BXWLaIEAIPLWA-uujagGOqGY1kWc+hBwJ2YhiLBFlMUVDDqpU+RSJIkRE79CoeUCrwkxZJjyzFRgwFkKG2TIl5MVUUxJqxuhmJi1kLIfhCBtMjxwKZ8zBmoybOORAo5FgymILAGhPgTgiMEEOd-Rz3hNogBAPWcA-gsDKrAhBKQYUqjNkurBGITwBqYJJEgbxHmnBHqgGWGIsQ26IE8yEexGWQjNqwDUEil7mw4Aq8gKrV5BA1CE0legbIWMDmsgLAgyWhppcQSVrLOXXL8cbpgpKxku1Hua+FGhIrYEAEcYAlcIc2R9GEBgldm9Ou1A2bjTbCsKSbe2xszZ4Q2LWYDdYBBcobYQQRmzrFM9MBAhWoD1RcnhBC9liLoXe8NNbG2XtOCgMkZi9RJbhYgMxM77mgdID+2AwWKg-ayDQKItSqkLs6z1jd4Yd2lO-V6PY1q7zZADH1E9zbCO+qPaoVT8ilEifbF6MxazaPmLzwZcqErCOoBI5iCZtHLKO0LaW3D2IzZT0JRO2FNaz0pNBpWKsPEoaLjDBZAVrzdiSsQ5QSyBk2u4eC54CyFkdioQJvPPRBAkPauFd1xAAA3GANnPA7dOGN5FA1IvFvLahOMhsX0rXhFI7tgQ+3eXy48kK88pSsdXf1hII2BORLau2zLMPwYsGSufFDb3+yu2Z4j+awCwuC87bh1NmXEv0GR2t7bsAYdneu+CjLr3kubgO9HBWqt0LHos5tygjnMPjdzLu3wKAYqniGuVbqsk+DX45VZ6jngw+Yfx5xwbPH92rz0+cpRT7BFggOV+wzuIo-x+T9VRBUH7zofGU941THxhtYJ9x8n5qPlEBvICmT2Hr3qd21y8yMs098XJqpmdmJW1h9mwucnhm1wcG8j0HdqsV8ahjdWtNpJl-NrAHNTBXMnRfI8Z3EhQVkLA8CcDyCv4gsQs8hwtjVItIIkpYsrx4tQJsgetUt0tkBhgSDoAyxZk8t6AWBeCzQwBKFC0McrwNJ3NXV6sGURDhA+DxDUcIApI1IZCpg5CWRZc6BqR2tOsl5ODKJuDiDawBD4ga8RspMw4JsK8zDSQI9p8fcxcHDj119JkwBNEVACBNcQgYgEkVleMvkCBvDXkNMwobkwABg7sThpk-DvMvl8RBBcQwBcRohG9IcXcV9G8XFKI0MCAMiSJRDSRsihcrwAdiilDaxnDgCi8ZdDt7CSis8kooAPCwBX9N8k98cHtKceDqjSQEdD9vtUJT9984hKj+i+CQcJJECh92izAvCIAfDfJCtIA0w-5d8pizRed+cUc0d4Dn8OjLsujbsd9Cdidv9Sdydadns3DACKc6dtjBiz8mcWdXcOdYC5dYd7iz8+dkcMDiwp19lRcqi+CrDDNcisFvipcaQ7Fld0iCg4QNdniCBDc3CHd9d0TmjjdTdzcthLd3h68UFasMTIdm80CficScihJx45tfdUSN0tgA9rx+YKDKCPA-Mpk3MbQfB2SOSUBAs-ASB6D8AcgWC2DEsODBouDEFBtBCj4bR7FlSpDfpnAkB8AAAKfteAQgAkUkp4IcFsftMnAYVQJAUky9ZIBRCYMDYQGLZeGXVSAASiaxl3q1+mLQUSCBqHU00yQA9MbT0MJUMK636hlJMLlJuGy0EMlwwSwTsJlirywS2xBMWyyxWzcmjJQlqNUCO3DwaI3TtWTNaPaM6Ouy32TygA7wEDexwmGMIhP1IgRxfVrJQlBzmKhxh2XGGEuSy0OMxQ3wrO6PONTy-0oGuJyGjPqj6iy3qggPeJX0+JWm+J7PtKY2jKwJyAwldQwhqBaDQAYmVRQWQF0HeRliCEPKgAUDoyCCQGBNUFFwzLjNG2hLoGbkDXhJVyRPVxtHPRuHdUEBgG0FDQwyxIHn9BuFxLNwgtBAJMQyPUAuAq3GcAQig3-IEExKPONRPLAXpFgvc2PNQUJO+l+non7UHzbSnMwvJP7Rb2oogE937SNXwFwqgAqyItPInWMjhkWHpJgAzP92bFKVIpEnIsxQbEotFAAoomQtAoQkdzospKPSYokuwtYtQRhEA24tUiBH4sEuZOEvLmDwIFIxLJmwDWPBjw7kDyQ2OOx2HLOJTwbDT2APMs4X1TpPT3cvVTGRMrADMuO2zxfKk3Uk4rAX3IQB4GSCkqhKSgpLR1bywXbyzJopQW7y5F7ypX72YkouHwfxXzHxwyv1NQghzOyBFSPTn0SVxEdV7EXPZ22DLJOMcu3xTwv2KrFXqgbOPx+2bLPzfkKsvzFXbIkjvxHxyKf0HOMDkBllCFxAIGmReRWGvNvOCF0AQhgDihHEUOUIEBGHqHmBULEmaAYnJ00Xw2mVWsCHWqICCEaWmu3N3JqBSIoimnmtDTAAAGp1LjhQEzqwAeBoBVIWK-rTzRQWdQa2KOdZVAMwB+1Y9+0agPxH1N0Hp59J5C4eA159rN5IZIbwqoA19VIBg4AIAYBigahm1ztsCwAwpzEsAiBzEojNjCdxyf8eA-8OqJ8uqcI+pqaRIhzE8nL+0-l2KAqO1hAZ0oyBBjc6qiq+B9tBq0cFaSqwV5yvJICxaYC1Khb38ei1LW0gC8yM0e051ua1aIINbIDoCmqJ17aVz3yByGxOzpK0qHqGx6LATJ1ow+BNEkBeBQhRBBApo4plqRgZZkjUjME4osNNEoAzNLgAbsUU1XF0jQ5gFCj7TqzoxsJkcXc4pXqQ6koAaFECBKLfIgKFBC11RNTaQcAhoZoQgUiQLKIrhowxZ4hsQagy7NEGJdA0Abz4BwICggFJCBhjYoBQazg0K-kAVTyOaljUN0M0KqhtTox4gdy9zfk0BDyCoA6Vh7lBBdAJ6DrzldkbkCA-9TECRA7iBIjBB-5N7nqkjPrcByEQgsMoBMbP7ZAwB1CBglBKIMNsNzhojjYXkS7mRW0uoKIEJDzT7G8-apUS7tAtweAoAygHyNyBBqqXU6rIVyU9w+9zQoNEMhUVMz0CKEUkUCL41+5mQ5kCiLdEMto4BydEAq7JCG6SQm6sgMh3k0iMixagRVJYp0KCLvyhwWRNTYNs6E0R5YT1R4UApMTZGCK6qWRXTkUIJV55GGGL4WGEb3h+0yLTGiUU60bUZDtcxOxQwigXRYhYoHcd01Lk0tpChcAxTv7fYCMDsC7zHfotohxnSzhZYwApAPbk0iUtopJQnBBgFiBAmRIxbjbuRQbqqITomiUcY8YCYiYSZYgF9zhhRxFJFnYZFn5kFogRps7oZXHsnfoG1smjbaEsqt0yQwU9GDtmmiUVI3GRI9KO0qrr9xUaqCGhKBn55fovpkmBbsnLGiHKUOmbGK07GkwCVenk1UmbLGniVh02niHsrOmxotn6UeLomhn9kRnSqxn8Hs7YgmHNFJnsnpnIwJHmQaGdHxUbYfQCKoQpIFGqZzH5mLGApy1MqjmVmmS1mQwNmAoGnGmdmhUWmDmrHIl61zH+nsmrmuMbg8HSEJmtgpJem3mg9jKy8llpanQVKV95bx8lbgjn7t7chTFyEKaXcr6EAtq-GYqqEkizMCBXcQqPJ6IU6m9U6qKw5IpopmwLbursg7JGy+qnIXJAkxqAp79JcQlVSxySdf9yd5W+a0nqXHVnVSEY1i1vVcNXR+09bKyDbk0jXsIFyoCxplymmvinaOhjTTkBTVlnNuTCDCgKoyCA2uT-WLowzjC+snQZQKoYzLCRXjxbCHtiygrWjcyIBRd43CBSZjIa5stCMKr09c3i98yWjTtjJ7WRyU9c26zxieqiJRj+rxiimf6i3hAOzO9IctWrw1zLl63nbBaX8Wrha2rP99XObyd62HjZ3XjNaGrV9mcFNCovXlQB28w8oc7sGc3t2ISlG4rwoYSPmL4ETVdkSQ2Tg7Fc3MSDcCLc3oL8SYgSL6J6gahb3ySyi3d+o8pPdaTcXs3Ft62mSYgWTyXiwbRSMy3q9LFm0a2RarxXbDnln0b6qwcbgdaab7K38HXRz6Lcnhh8neBCmEZZhbpZQSHhRinFQl219lofaoPS28pi9INI5rKKH3hoOWPq9PLAOu0YOUyS8oZ+YI3I3NixPxPTB+TI2ZP-WtzI7BWx6IAcBGNKResggd2wy91RcLCD34zxtgjvF4JC0qk8KOhjJjPVCzOaE4FEEbPMyGxuDCt5TchpSUtIynRM9stcsohcsrPTPEnUEuoZdoZLOZb+DZkksIzY3XPYg-O4gAuIAbOQusEwvmxvF62LDouPPY2svBCEvYgkuUuj3w4YdTDmjE2cvesKuBjIvLDCviugvTzUukpXHlQEDoyaMIvE3mwr3xbMvt2LDmw-CBv+tK9szZkRvUSxuvOZvhu6AfaEmEBEt6gY0aF8tUSVDJCmRxItDL0GVrFVivMzO1AFlIibdUKEA5kMIIhPI-DLSgyEjzvEB5LKB6JWn9sgyr2wAMJhBC1hAJZYoLz-vdWBCIhmxXUpQ0QIfFvLplwnA3vdXlvMRKJRgghCB17foHvfv-vhggeAoQe0ArTmxXTHS3yGUbQhFhg4oobUFtuCAr4Gf1CytLlSTmx1StTVJdT9SfjDTfXVJTTzTLTrT8R-vHU3SsFAyyf9tAyvSyFhBfSNNQ15D6A25sG0BYEtw+BcQ3NsgdPFs9P6g-81uPU2jdEZus3NftfdenRIaZvlybR+yS39lre1xbeWd6gibIDqeRFHfYwh2XfVA3edfEEWd+v-fwhNsretf3ew-WI4dvf6AgA)
 
 
-![Parser preview](/docs/highlighted-types-2.png)
+![Parser preview](/docs/highlighted-types-1.png)
 
 ![Parser preview](/docs/highlighted-inputs-1.png)
 
-![Parser preview](/docs/highlighted-enums.png)
+![Parser preview](/docs/highlighted-interfaces-1.png)
+
+![Parser preview](/docs/highlighted-enums-1.png)
 
 
 ## TS Parser supports
 
 - Comments
   - Single line comments ✅
-- Descriptions ❌
 - Types ✅
 - Enums ✅
 - Input Types ✅
@@ -46,8 +47,11 @@ you can interactive play with the TS-GQL parser [there](https://www.typescriptla
         - Int ✅
       - Nullable Fields ✅
       - Array Fields ✅
-- Interfaces ❌
+- Interfaces 
+  - definition ✅
+  - implements keyword ✅
 - Mutations ✅
+- Descriptions ❌
     
 (Btw Source code is full of bugs and edge case issues...)
 
@@ -61,7 +65,9 @@ This is example of using this TS parser
 Let's have this graphQL Schema
 
 ```graphql
-# Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
+interface Node {id: ID!}
+# input CommentedPaginationPOC { input: Int! }
+input Pagination { value: String }
 enum OrderByKeyword {
   ASC
   DESC
@@ -69,22 +75,17 @@ enum OrderByKeyword {
 type Mutation {
   contactForm(
     input: OrderByKeyword!,
-    
-  ): ContactFormResType
+  ): String
 }
-type Query {
+type Query implements Node & Node2 {
+  age: Int
   title(
     limit: Int = 10
 
     offset: Int!, thirdArg: String!
   ): String!
   author: Float!
-  age: Int
 }
-input Pagination {
-  value: String
-}
-`
 ```
 
 
@@ -93,60 +94,72 @@ Inferred type will be:
 
 ```typescript
 {
-    enums: {
-        OrderByKeyword: "ASC" | "DESC";
+  interfaces = {
+    Node: {
+        id: "ID";
     };
-    inputs: {
-        Pagination: {
-            value: {
-                value: string | null;
+  };
+  enums: {
+    OrderByKeyword: "ASC" | "DESC";
+  };
+  inputs: {
+    Pagination: {
+      value: {
+        value: string | null;
+      };
+    };
+  };
+  types: {
+    Mutation: {
+      implements: [];
+      fields: {
+        contactForm: {
+          args: {
+            input: {
+              value: "OrderByKeyword";
+              defaultValue: void;
             };
+          };
+          value: string | null;
         };
+      };
     };
-    types: {
-        Mutation: {
-            contactForm: {
-                args: {
-                    input: {
-                        value: "OrderByKeyword";
-                        defaultValue: null;
-                    };
+    Query: {
+      implements: ["Node", "Node2"];
+      fields: {
+        title: {
+            args: {
+                limit: {
+                    value: number | null;
+                    defaultValue: "10";
                 };
-                value: "ContactFormResType" | null;
+                offset: {
+                    value: number;
+                    defaultValue: null;
+                };
+                thirdArg: {
+                    value: string;
+                    defaultValue: null;
+                };
             };
+            value: string;
         };
-        Query: {
-          title: {
-              args: {
-                  limit: {
-                      value: number | null;
-                      defaultValue: "10";
-                  };
-                  offset: {
-                      value: number;
-                      defaultValue: null;
-                  };
-                  thirdArg: {
-                      value: string;
-                      defaultValue: null;
-                  };
-              };
-              value: string;
-          };
-          author: {
-              args: {};
-              value: number;
-          };
-          age: {
-              args: {};
-              value: number | null;
-          }
+        author: {
+            args: {};
+            value: number;
+        };
+        age: {
+            args: {};
+            value: number | null;
+        }
       }
+    }
+  }
 }
 ```
 
 
-![Parser preview](/docs/highlighted-types-1.png)
+![Parser preview](/docs/highlighted-types-2.png)
 
 ## My tODOs:
 

@@ -203,6 +203,20 @@ type ParseRawInputTypeString<
 // --------- GQL type ------------
 // -------------------------------
 
+/*
+example T:
+
+type Test = ExtractGQLTypesAST<`
+  type XXX {
+    title(
+      limit: Int = 10
+      offset: Int!, thirdArg: String
+    ): String!
+    author: Float!
+  }
+`>
+ */
+
 type ExtractGQLTypesAST<
   T extends string,
   RawTypeStrings = ParseGqlTypes<T>,
@@ -226,20 +240,6 @@ type ParseRawTypeStrings<T> = T extends []
   : // @ts-expect-error
     [ParseRawTypeString<Head<T>>, ...ParseRawTypeStrings<Tail<T>>]
 
-/*
-example T:
-
-type Test = ParseRawTypeString<{
-  type: 'xxx'
-  body: `
-    title(
-      limit: Int = 10
-      offset: Int!, thirdArg: String
-    ): String!
-    author: Float!
-    `
-}>
- */
 type ParseRawTypeString<
   T extends { type: string; body: string },
   TypeName = RemoveALlWhiteSpaces<T['type']>,
@@ -262,8 +262,9 @@ type ParseRawTypeString<
 
 // pretty tricky parser which try to resolve if key: value has some args
 // just by checking if the name includes `(` bracket character
-// btw there is duplicate code for simple non arguments key recursion
-// TODO: add docs
+// BTW: there is duplicate code for simple non arguments key recursion :(
+// TODO: add better docs for this pice of shitty magic
+// TODO: what about to split to 2 function one for parsing infer value, second for spreading arrays?
 type ParseTypeKeyValuesWithArgs<T> = RemoveALlWhiteSpaces<T> extends ``
   ? []
   : T extends `${infer Key}:${infer Value}\n${infer PureRest}`
@@ -378,7 +379,7 @@ enum OrderByKeyword {
 type Mutation {
   contactForm(
     input: OrderByKeyword!,
-  ): ContactFormResType
+  ): String
 }
 type Query {
   age: Int
@@ -389,13 +390,12 @@ type Query {
   ): String!
   author: Float!
 }
-input Pagination {
-  value: String
-}
+# input CommentedPaginationPOC { input: Int! }
+input Pagination { value: String }
 `
 
 type ParsedGraphQL = GetGqlAST<typeof typeDefs>
 
-type Types = ParsedGraphQL['types']['Query']['title']
+type Types = ParsedGraphQL['types']
 type Enums = ParsedGraphQL['enums']
 type Inputs = ParsedGraphQL['inputs']

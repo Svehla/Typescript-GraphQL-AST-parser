@@ -18,8 +18,6 @@ type RemoveALlWhiteSpaces<
   T,
   T0 = RemoveStartWhiteSpaces<T>,
   T1 = RemoveEndWhiteSpaces<T0>
-  // T2 = RemoveStartEndLn<T1>,
-  // T3 = RemoveEndEndLn<T2>
 > = T1
 
 // --------- Array-Lines utils ----------------
@@ -304,7 +302,7 @@ type ExtractGQLEnumsAST<
 
 type ParseGqlEnums<
   T extends string
-> = T extends `${infer _Whatever}enum${infer EnumName}{${infer EnumBody}}${infer Rest}`
+> = T extends `${infer _Whatever}enum ${infer EnumName}{${infer EnumBody}}${infer Rest}`
   ? [{ type: EnumName; body: EnumBody }, ...ParseGqlEnums<Rest>]
   : []
 
@@ -328,8 +326,8 @@ type ParseRawEnumStrings<T> = T extends []
 
 type GetGqlAST<
   T extends string,
-  // GQLCodeComments = T,
-  GQLCodeComments = RemoveGQLComments<T>,
+  GQLCodeComments = T,
+  // GQLCodeComments = RemoveGQLComments<T>,
   GQLInputTypesAST = ExtractGQLInputTypesAst<Cast<GQLCodeComments, string>>,
   GQLTypesAST = ExtractGQLTypesAST<Cast<GQLCodeComments, string>>,
   GQLEnumsAST = ExtractGQLEnumsAST<Cast<GQLCodeComments, string>>
@@ -354,6 +352,9 @@ type Mutation {
 type Query {
   title(
     limit: Int = 10
+
+
+
     offset: Int!, thirdArg: String!
   ): String!
   author: Float!

@@ -457,7 +457,7 @@ type ExtractGQLScalarsAst<
   },
 > = Merged
 
-type ParseGqlScalar<T> = T extends `${infer _Whatever}\scalar ${infer directiveName}\n${infer Rest}`
+type ParseGqlScalar<T> = T extends `${infer _Whatever}\nscalar ${infer directiveName}\n${infer Rest}`
   ? [
       { 
         name: Trim<directiveName>

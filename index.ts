@@ -471,7 +471,6 @@ type ParseGqlScalar<T> = T extends `${infer _Whatever}\scalar ${infer directiveN
 // ----------------------------------
 type GetGqlAST<
   T extends string,
-  // GQLCodeComments = T,
   ClearedCode extends string = RemoveGQLComments<TrimAllLines<T>>,
 
   GQLScalarsAST = ExtractGQLScalarsAst<ClearedCode>,
@@ -500,13 +499,13 @@ enum OrderByKeyword {
 }
 directive @upper on FIELD_DEFINITION!
 type Mutation {
-  contactForm(
-    input: OrderByKeyword!,
-  ): String
+  contactForm(input: OrderByKeyword!): String
 }
 type Query implements Node & Node2 {
   age: Int
-  title(offset: Int!, thirdArg: String!): String!
+  title(
+    limit: Int! = 10
+    offset: Int!, thirdArg: String!): String!
   author: Float!
 }
 `
@@ -516,6 +515,6 @@ type ParsedGraphQL = GetGqlAST<typeof typeDefs>
 type Directives = ParsedGraphQL['directives']
 type Scalars = ParsedGraphQL['scalars']
 type Interfaces = ParsedGraphQL['interfaces']
-type Types = ParsedGraphQL['types']
+type Types = ParsedGraphQL['types']['Query']
 type Enums = ParsedGraphQL['enums']
 type Inputs = ParsedGraphQL['inputs']

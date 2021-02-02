@@ -6,6 +6,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+.bypassDeepRecurisvePOCTest.ts
+
 # temporary files for generating a encrypting pdfs 
 temp/*
 !temp/readme.md

@@ -21,11 +21,7 @@ type Trim<
   T0 = RemoveStartWhiteSpaces<T>,
   T1 = RemoveEndWhiteSpaces<T0>
 > = T1
-
-
-
 /*
-test call
 type TestConvertArrIntoObj = ConvertArrIntoObject<
   [
     { id: 'id1', val: '1xxxx'},
@@ -47,19 +43,17 @@ type ConvertArrIntoObject<
 
 // --------- Array-Lines utils ----------------
 
+type Map_Trim<T> = T extends [] ? [] : [Trim<Head<T>>, ...Map_Trim<Tail<T>>]
 
-type MapTrim<T> = T extends [] ? [] : [Trim<Head<T>>, ...MapTrim<Tail<T>>]
+// type TrimAllLines<T extends string> =
 
-type TrimAllLines<T extends string> = JoinArrByNewLine<MapTrim<SplitByLines<T>>>
+type IsTextEmpty<T> = T extends '' ? true : false
 
-type FilterEmptyItems<T extends string[]> = T extends []
+type Filter_IsTextEmpty<T> = T extends []
   ? []
-  : Head<T> extends ''
-  ? // @ts-expect-error
-    FilterEmptyItems<Tail<T>>
-  : // @ts-expect-error
-    [Head<T>, ...FilterEmptyItems<Tail<T>>]
-
+  : IsTextEmpty<Head<T>> extends true
+  ? Filter_IsTextEmpty<Tail<T>>
+  : [Head<T>, ...Filter_IsTextEmpty<Tail<T>>]
 
 type SplitBy<T extends string, Delimiter extends string> = T extends ``
   ? []
@@ -67,10 +61,10 @@ type SplitBy<T extends string, Delimiter extends string> = T extends ``
   ? [A, ...SplitBy<B, Delimiter>]
   : [T]
 
-type Join<T extends any[], Delimiter extends string> =  T extends []
-? ''
-: // @ts-expect-error ????
-  `${Head<T>}${Delimiter}${Join<Tail<T>, Delimiter>}`
+type Join<T extends any[], Delimiter extends string> = T extends []
+  ? ''
+  : // @ts-expect-error ????
+    `${Head<T>}${Delimiter}${Join<Tail<T>, Delimiter>}`
 
 type SplitByCommas<T extends string> = SplitBy<T, ','>
 type SplitByLines<T extends string> = SplitBy<T, '\n'>
@@ -97,23 +91,25 @@ type SplitByCommaAndLines<
 type RemoveGQLComments<
   T extends string,
   Lines = SplitByLines<T>,
-  LinesWithoutNotes = RemoveLineStarsWIthHashTag<Lines>,
+  LinesWithoutNotes = Filter_IsLineGQLComment<Lines>,
   // @ts-expect-error
   ClearedQuery = JoinArrByNewLine<LinesWithoutNotes>
 > = ClearedQuery
 
-type IsLineStartsWithHashTag<T> = T extends `#${infer X}` ? true : false
-type GQLLineIsComment<T, T0 = RemoveStartWhiteSpaces<T>, T1 = IsLineStartsWithHashTag<T0>> = T1
+type IsLineStartsWithHashTag<T> = T extends `#${infer _X}` ? true : false
 
-type RemoveLineStarsWIthHashTag<T> = T extends []
+// TODO: add support for GQL descriptions
+type IsLineGQLComment<T> = IsLineStartsWithHashTag<T>
+
+type Filter_IsLineGQLComment<T> = T extends []
   ? []
-  : GQLLineIsComment<Head<T>> extends true
-  ? RemoveLineStarsWIthHashTag<Tail<T>>
-  : [Head<T>, ...RemoveLineStarsWIthHashTag<Tail<T>>]
+  : IsLineGQLComment<Head<T>> extends true
+  ? Filter_IsLineGQLComment<Tail<T>>
+  : [Head<T>, ...Filter_IsLineGQLComment<Tail<T>>]
 
-// --------- GQL AST Parsers ----------
+// --------- GQL AST Parsers --------
 // ----------------------------------
-// ----------- value parser ---------
+// -------- key: value parser -------
 // ----------------------------------
 
 // This generic does not parse key val with arguments
@@ -124,11 +120,9 @@ type ParseSimpleKeyValue<T> = Trim<T> extends `${infer Key}:${infer Value}`
     }
   : null
 
-type ParseSimpleKeyValues<T> = T extends []
+type Map_ParseSimpleKeyValue<T> = T extends []
   ? []
-  : ParseSimpleKeyValue<Head<T>> extends null
-  ? ParseSimpleKeyValues<Tail<T>>
-  : [ParseSimpleKeyValue<Head<T>>, ...ParseSimpleKeyValues<Tail<T>>]
+  : [ParseSimpleKeyValue<Head<T>>, ...Map_ParseSimpleKeyValue<Tail<T>>]
 
 type ParseRawGQLArgValueWithDefaultOption<T> = T extends `${infer DataType}=${infer DefaultValue}`
   ? {
@@ -146,8 +140,7 @@ type GetValueType<T> = T extends `${infer Type}!`
   ? GetValueArrayType<Type>
   : GetValueArrayType<T> | null
 
-type GetValueArrayType<T> = 
-T extends `[${infer Arr}]`
+type GetValueArrayType<T> = T extends `[${infer Arr}]`
   ? // recursion to optional arr type of optional value in the array
     ParseRawGQLValue<Arr>[]
   : GetValueBaseType<T>
@@ -166,20 +159,10 @@ type GetValueBaseType<T> = T extends 'String'
 // ------ GQL Input type ---------
 // -------------------------------
 
-/**
- * example calling:
-  
-type Test = ExtractGQLInputTypesAst<`
-input XInput {
-  a: Int!
-  b: Int!
-  c: String
-}`>
- */
 type ExtractGQLInputTypesAst<
   T extends string,
   RawTypeStrings = ParseGqlInput<T>,
-  ArrayOfInputs = ParseRawInputTypeStrings<RawTypeStrings>,
+  ArrayOfInputs = Map_ParseRawInputTypeString<RawTypeStrings>,
   // @ts-expect-error
   RootInputsObject = ConvertArrIntoObject<ArrayOfInputs, 'typeName'>,
   InputObjectsJustBody = {
@@ -194,16 +177,15 @@ type ParseGqlInput<
   ? [{ name: InputName; body: InputBody }, ...ParseGqlInput<Rest>]
   : []
 
-type ParseRawInputTypeStrings<T> = T extends []
+type Map_ParseRawInputTypeString<T> = T extends []
   ? []
   : // @ts-expect-error
-    [ParseRawInputTypeString<Head<T>>, ...ParseRawInputTypeStrings<Tail<T>>]
+    [ParseRawInputTypeString<Head<T>>, ...Map_ParseRawInputTypeString<Tail<T>>]
 
 type ParseRawInputTypeString<
   T extends { name: string; body: string },
-  TypeName = Trim<T['name']>,
   // @ts-expect-error
-  BodyPropsKeyVal = ParseSimpleKeyValues<SplitByCommaAndLines<T['body']>>,
+  BodyPropsKeyVal = Map_ParseSimpleKeyValue<SplitByCommaAndLines<T['body']>>,
   // @ts-expect-error
   InputsObject = ConvertArrIntoObject<BodyPropsKeyVal, 'key'>,
   Body = {
@@ -211,7 +193,7 @@ type ParseRawInputTypeString<
     [K in keyof InputsObject]: ParseRawGQLValue<InputsObject[K]['value']>
   }
 > = {
-  typeName: TypeName
+  typeName: Trim<T['name']>
   body: Body
 }
 
@@ -219,22 +201,12 @@ type ParseRawInputTypeString<
 // ------ GQL interfaces ---------
 // -------------------------------
 
-/**
- * example calling:
-  
-type Test = ExtractGQLInterfacesAST<`
-interface Node {
-  id: ID!
-}
-interface Node2 {id: ID!}g
-`>
-*/
 type ExtractGQLInterfacesAST<
   T extends string,
   RawInterfaceStrings = ParseGqlInterface<T>,
   // --- reuse input starts ----
   // we reuse logic from GQL input type which has same body structure as Interface body
-  ArrayOfInterfaces = ParseRawInputTypeStrings<RawInterfaceStrings>,
+  ArrayOfInterfaces = Map_ParseRawInputTypeString<RawInterfaceStrings>,
   // @ts-expect-error
   RootInterfaceObject = ConvertArrIntoObject<ArrayOfInterfaces, 'typeName'>,
   // --- reuse input ends ----
@@ -254,23 +226,10 @@ type ParseGqlInterface<
 // --------- GQL type ------------
 // -------------------------------
 
-/*
-example T:
-type Test = ExtractGQLTypesAST<`
-  type TestType {
-    title(
-      limit: Int = 10
-      offset: Int!, thirdArg: String
-    ): String!
-    author: Float!
-  }
-`>
- */
-
 type ExtractGQLTypesAST<
   T extends string,
   RawTypeStrings = ParseGqlTypes<T>,
-  TypesArr = ParseRawTypeStrings<RawTypeStrings>,
+  TypesArr = Map_ParseRawTypeString<RawTypeStrings>,
   // @ts-expect-errors
   TypesObj = ConvertArrIntoObject<TypesArr, 'typeName'>,
   MergeTypes = {
@@ -302,10 +261,10 @@ type ParseGqlTypes<
       ]
   : []
 
-type ParseRawTypeStrings<T> = T extends []
+type Map_ParseRawTypeString<T> = T extends []
   ? []
   : // @ts-expect-error
-    [ParseRawTypeString<Head<T>>, ...ParseRawTypeStrings<Tail<T>>]
+    [ParseRawTypeString<Head<T>>, ...Map_ParseRawTypeString<Tail<T>>]
 
 type ParseRawTypeString<
   T extends { implements: any; name: string; body: string },
@@ -316,7 +275,7 @@ type ParseRawTypeString<
   Body = {
     // now the GQL parser supports only 1 interface per type. No idea if real GQL supports more
     // TODO: check that + implement if yes
-    implements: T['implements'] extends null ? [] : MapTrim<SplitByAmpersand<T['implements']>>
+    implements: T['implements'] extends null ? [] : Map_Trim<SplitByAmpersand<T['implements']>>
     fields: {
       // ---- gaga magic ----
       [K in keyof BodyPropsKeyValObj]: {
@@ -353,9 +312,9 @@ type ParseTypeKeyValuesWithArgs<
             // enable split args by
             // 1) new line
             // 2) comma
-            args: ParseSimpleKeyValues<
+            args: Map_ParseSimpleKeyValue<
               // @ts-expect-error
-              FilterEmptyItems<SplitByCommaAndLines<Args>>
+              Filter_IsTextEmpty<SplitByCommaAndLines<Args>>
             >
             value: Trim<ValByArgs>
           },
@@ -398,7 +357,7 @@ type ParserRawGQLTypeBodyArgsPropString<
 type ExtractGQLEnumsAST<
   T extends string,
   RawTypeStrings = ParseGqlEnums<T>,
-  SplitsArr = MapParseRawEnumString<RawTypeStrings>,
+  SplitsArr = Map_ParseRawEnumString<RawTypeStrings>,
   // @ts-expect-error
   EnumsObject = ConvertArrIntoObject<SplitsArr, 'typeName'>,
   MergeEnums = {
@@ -413,16 +372,15 @@ type ParseGqlEnums<
   ? [{ type: EnumName; body: EnumBody }, ...ParseGqlEnums<Rest>]
   : []
 
-type MapParseRawEnumString<T> = T extends []
+type Map_ParseRawEnumString<T> = T extends []
   ? []
   : // @ts-expect-error
-    [ParseRawEnumString<Head<T>>, ...MapParseRawEnumString<Tail<T>>]
+    [ParseRawEnumString<Head<T>>, ...Map_ParseRawEnumString<Tail<T>>]
 
 type ParseRawEnumString<T extends { type: string; body: string }> = {
   typeName: Trim<T['type']>
   // @ts-expect-error
-  body: FilterEmptyItems<SplitByCommaAndLines<T['body']>>
-  // body: FilterEmptyItems<SplitByCommaAndLines<T['body']>>
+  body: Filter_IsTextEmpty<SplitByCommaAndLines<T['body']>>
 }
 
 // ---------------------------------
@@ -480,7 +438,8 @@ type ParseGqlScalar<
 // ----------------------------------
 type GetGqlAST<
   T extends string,
-  ClearedCode extends string = RemoveGQLComments<TrimAllLines<T>>,
+  TTrimmedLines extends string = JoinArrByNewLine<Map_Trim<SplitByLines<T>>>,
+  ClearedCode extends string = RemoveGQLComments<TTrimmedLines>,
   GQLScalarsAST = ExtractGQLScalarsAst<ClearedCode>,
   GQLDirectivesAST = ExtractGQLDirectivesAst<ClearedCode>,
   GQLInputTypesAST = ExtractGQLInputTypesAst<ClearedCode>,
@@ -504,14 +463,14 @@ const typeDefs = `
   enum OrderByKeyword {ASC,DESC}
   enum enum2 { A, B, C 
   D}
-  directive @upper on FIELD_DEFINITION!
+  directive @upper on FIELD_DEFINITION
   type Mutation {
     contactForm(input: OrderByKeyword!): String
   }
   type Query implements Node & Node2 {
     age: Int, title(
       limit: Int! = 10
-      offset: [Int!]!, thirdArg: String!): String!
+      offset: [Int!]!, thirdArg: String!): Mutation!
     author: Float!
   }
 `

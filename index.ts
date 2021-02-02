@@ -22,9 +22,7 @@ type Trim<
   T1 = RemoveEndWhiteSpaces<T0>
 > = T1
 
-type MapArrayTrim<T> = T extends []
-  ? []
-  : [Trim<Head<T>>, ...MapArrayTrim<Tail<T>>]
+
 
 /*
 test call
@@ -49,50 +47,48 @@ type ConvertArrIntoObject<
 
 // --------- Array-Lines utils ----------------
 
-type TrimAllLines<T extends string> = JoinArrByNewLine<TrimAllItems<SplitByLines<T>>>
 
-type TrimAllItems<T> = T extends []
-  ? []
-  : [
-      RemoveEndWhiteSpaces<Trim<Head<T>>>,
-      ...TrimAllItems<Tail<T>>
-    ]
+type MapTrim<T> = T extends [] ? [] : [Trim<Head<T>>, ...MapTrim<Tail<T>>]
 
-
-type RemoveItemStarEndWhiteSpaces<T> = T extends []
-  ? []
-  : [
-      RemoveEndWhiteSpaces<RemoveStartWhiteSpaces<Head<T>>>,
-      ...RemoveItemStarEndWhiteSpaces<Tail<T>>
-    ]
+type TrimAllLines<T extends string> = JoinArrByNewLine<MapTrim<SplitByLines<T>>>
 
 type FilterEmptyItems<T extends string[]> = T extends []
   ? []
   : Head<T> extends ''
-  ? Tail<T>
-  : [Head<T>, ...Tail<T>]
+  ? // @ts-expect-error
+    FilterEmptyItems<Tail<T>>
+  : // @ts-expect-error
+    [Head<T>, ...FilterEmptyItems<Tail<T>>]
 
-type JoinArrByNewLine<T extends string[]> = T extends []
-  ? ''
-  : // @ts-expect-error ????
-    `${Head<T>}\n${JoinArrByNewLine<Tail<T>>}`
-type SplitByCommas<T extends string> = T extends ``
+
+type SplitBy<T extends string, Delimiter extends string> = T extends ``
   ? []
-  : T extends `${infer A},${infer B}`
-  ? [A, ...SplitByLines<B>]
+  : T extends `${infer A}${Delimiter}${infer B}`
+  ? [A, ...SplitBy<B, Delimiter>]
   : [T]
 
-type SplitByLines<T extends string> = T extends ``
-  ? []
-  : T extends `${infer A}\n${infer B}`
-  ? [A, ...SplitByLines<B>]
-  : [T]
+type Join<T extends any[], Delimiter extends string> =  T extends []
+? ''
+: // @ts-expect-error ????
+  `${Head<T>}${Delimiter}${Join<Tail<T>, Delimiter>}`
 
-type SplitByAmpersand<T extends string> = T extends ``
-  ? []
-  : T extends `${infer A}&${infer B}`
-  ? [A, ...SplitByLines<B>]
-  : [T]
+type SplitByCommas<T extends string> = SplitBy<T, ','>
+type SplitByLines<T extends string> = SplitBy<T, '\n'>
+type SplitByAmpersand<T extends string> = SplitBy<T, '&'>
+
+type JoinArrByNewLine<T extends string[]> = Join<T, '\n'>
+
+type ReplaceCommasToNewLines<
+  T extends string,
+  T0 extends string[] = SplitByCommas<T>,
+  T1 = JoinArrByNewLine<T0>
+> = T1
+
+type SplitByCommaAndLines<
+  T extends '',
+  T0 extends string = ReplaceCommasToNewLines<T>,
+  T1 = SplitByLines<T0>
+> = T1
 
 // -------------------------------
 // --------- comments ------------
@@ -150,9 +146,10 @@ type GetValueType<T> = T extends `${infer Type}!`
   ? GetValueArrayType<Type>
   : GetValueArrayType<T> | null
 
-type GetValueArrayType<T> = T extends `[${infer Arr}]`
+type GetValueArrayType<T> = 
+T extends `[${infer Arr}]`
   ? // recursion to optional arr type of optional value in the array
-    ParseRawGQLValue<Arr[]>
+    ParseRawGQLValue<Arr>[]
   : GetValueBaseType<T>
 
 type GetValueBaseType<T> = T extends 'String'
@@ -205,7 +202,8 @@ type ParseRawInputTypeStrings<T> = T extends []
 type ParseRawInputTypeString<
   T extends { name: string; body: string },
   TypeName = Trim<T['name']>,
-  BodyPropsKeyVal = ParseSimpleKeyValues<SplitByLines<T['body']>>,
+  // @ts-expect-error
+  BodyPropsKeyVal = ParseSimpleKeyValues<SplitByCommaAndLines<T['body']>>,
   // @ts-expect-error
   InputsObject = ConvertArrIntoObject<BodyPropsKeyVal, 'key'>,
   Body = {
@@ -318,9 +316,7 @@ type ParseRawTypeString<
   Body = {
     // now the GQL parser supports only 1 interface per type. No idea if real GQL supports more
     // TODO: check that + implement if yes
-    implements: T['implements'] extends null
-      ? []
-      : MapArrayTrim<SplitByAmpersand<T['implements']>>
+    implements: T['implements'] extends null ? [] : MapTrim<SplitByAmpersand<T['implements']>>
     fields: {
       // ---- gaga magic ----
       [K in keyof BodyPropsKeyValObj]: {
@@ -341,12 +337,16 @@ type ParseRawTypeString<
 // BTW: there is duplicate code for simple non arguments key recursion :(
 // TODO: add better docs for this pice of shitty magic
 // TODO: what about to split to 2 function one for parsing infer value, second for spreading arrays?
-type ParseTypeKeyValuesWithArgs<T> = Trim<T> extends ``
+type ParseTypeKeyValuesWithArgs<
+  T extends string,
+  TrimmedT extends string = Trim<T>,
+  ClearedT = ReplaceCommasToNewLines<TrimmedT>
+> = ClearedT extends ``
   ? []
-  : T extends `${infer Key}:${infer Value}\n${infer PureRest}`
+  : ClearedT extends `${infer Key}:${infer Value}\n${infer PureRest}`
   ? // if include bracket => key has args...
     Key extends `${infer What1}(${infer Args}`
-    ? T extends `${infer KeyName}(${infer Args}):${infer ValByArgs}\n${infer Rest}`
+    ? ClearedT extends `${infer KeyName}(${infer Args}):${infer ValByArgs}\n${infer Rest}`
       ? [
           {
             key: Trim<RemoveStartEndLn<KeyName>>
@@ -354,7 +354,8 @@ type ParseTypeKeyValuesWithArgs<T> = Trim<T> extends ``
             // 1) new line
             // 2) comma
             args: ParseSimpleKeyValues<
-              FilterEmptyItems<SplitByLines<JoinArrByNewLine<SplitByCommas<Args>>>>
+              // @ts-expect-error
+              FilterEmptyItems<SplitByCommaAndLines<Args>>
             >
             value: Trim<ValByArgs>
           },
@@ -368,7 +369,7 @@ type ParseTypeKeyValuesWithArgs<T> = Trim<T> extends ``
           },
           ...ParseTypeKeyValuesWithArgs<PureRest>
         ]
-    : T extends `${infer Key}:${infer Value}\n${infer Rest2}`
+    : ClearedT extends `${infer Key}:${infer Value}\n${infer Rest2}`
     ? [
         {
           key: Trim<RemoveStartEndLn<Key>>
@@ -379,6 +380,7 @@ type ParseTypeKeyValuesWithArgs<T> = Trim<T> extends ``
       ]
     : []
   : []
+
 type ParserRawGQLTypeBodyArgsPropString<
   // TODO: T should be only arg, not whole body
   T extends { key: string; value: string }[],
@@ -396,7 +398,7 @@ type ParserRawGQLTypeBodyArgsPropString<
 type ExtractGQLEnumsAST<
   T extends string,
   RawTypeStrings = ParseGqlEnums<T>,
-  SplitsArr = ParseRawEnumStrings<RawTypeStrings>,
+  SplitsArr = MapParseRawEnumString<RawTypeStrings>,
   // @ts-expect-error
   EnumsObject = ConvertArrIntoObject<SplitsArr, 'typeName'>,
   MergeEnums = {
@@ -404,21 +406,24 @@ type ExtractGQLEnumsAST<
     [K in keyof EnumsObject]: EnumsObject[K]['body'][number]
   }
 > = MergeEnums
+
 type ParseGqlEnums<
   T extends string
 > = T extends `${infer _Whatever}enum ${infer EnumName}{${infer EnumBody}}${infer Rest}`
   ? [{ type: EnumName; body: EnumBody }, ...ParseGqlEnums<Rest>]
   : []
-type ParseRawEnumString<T> = {
-  // @ts-expect-error
+
+type MapParseRawEnumString<T> = T extends []
+  ? []
+  : // @ts-expect-error
+    [ParseRawEnumString<Head<T>>, ...MapParseRawEnumString<Tail<T>>]
+
+type ParseRawEnumString<T extends { type: string; body: string }> = {
   typeName: Trim<T['type']>
   // @ts-expect-error
-  body: FilterEmptyItems<RemoveItemStarEndWhiteSpaces<SplitByLines<T['body']>>>
+  body: FilterEmptyItems<SplitByCommaAndLines<T['body']>>
+  // body: FilterEmptyItems<SplitByCommaAndLines<T['body']>>
 }
-type ParseRawEnumStrings<T> = T extends []
-  ? []
-  : [ParseRawEnumString<Head<T>>, ...ParseRawEnumStrings<Tail<T>>]
-
 
 // ---------------------------------
 // ------- GQL Directives ----------
@@ -426,19 +431,21 @@ type ParseRawEnumStrings<T> = T extends []
 
 type ExtractGQLDirectivesAst<
   T extends string,
-  RawDirectives extends { name: string, body: string }[] = ParseGqlDirectives<T>,
+  RawDirectives extends { name: string; body: string }[] = ParseGqlDirectives<T>,
   DirectivesObject = ConvertArrIntoObject<RawDirectives, 'name'>,
   Merged = {
     // @ts-expect-error
     [K in keyof DirectivesObject]: ParseRawGQLValue<DirectivesObject[K]['body']>
-  },
+  }
 > = Merged
 
-type ParseGqlDirectives<T> = T extends `${infer _Whatever}\ndirective @${infer directiveName} on ${infer DirectiveBody}\n${infer Rest}`
+type ParseGqlDirectives<
+  T
+> = T extends `${infer _Whatever}\ndirective @${infer directiveName} on ${infer DirectiveBody}\n${infer Rest}`
   ? [
-      { 
-        name: directiveName; 
-        body: DirectiveBody 
+      {
+        name: directiveName
+        body: DirectiveBody
       },
       ...ParseGqlDirectives<Rest>
     ]
@@ -454,12 +461,14 @@ type ExtractGQLScalarsAst<
   ScalarsObject = ConvertArrIntoObject<RawDirectives, 'name'>,
   Merged = {
     [K in keyof ScalarsObject]: any
-  },
+  }
 > = Merged
 
-type ParseGqlScalar<T> = T extends `${infer _Whatever}\nscalar ${infer directiveName}\n${infer Rest}`
+type ParseGqlScalar<
+  T
+> = T extends `${infer _Whatever}\nscalar ${infer directiveName}\n${infer Rest}`
   ? [
-      { 
+      {
         name: Trim<directiveName>
       },
       ...ParseGqlScalar<Rest>
@@ -472,7 +481,6 @@ type ParseGqlScalar<T> = T extends `${infer _Whatever}\nscalar ${infer directive
 type GetGqlAST<
   T extends string,
   ClearedCode extends string = RemoveGQLComments<TrimAllLines<T>>,
-
   GQLScalarsAST = ExtractGQLScalarsAst<ClearedCode>,
   GQLDirectivesAST = ExtractGQLDirectivesAst<ClearedCode>,
   GQLInputTypesAST = ExtractGQLInputTypesAst<ClearedCode>,
@@ -489,32 +497,30 @@ type GetGqlAST<
 }
 
 const typeDefs = `
-scalar    Date1
-interface Node {id: ID!}
-# input CommentedPaginationPOC { input: Int! }
-input Pagination { value: String }
-enum OrderByKeyword {
-  ASC
-  DESC
-}
-directive @upper on FIELD_DEFINITION!
-type Mutation {
-  contactForm(input: OrderByKeyword!): String
-}
-type Query implements Node & Node2 {
-  age: Int
-  title(
-    limit: Int! = 10
-    offset: Int!, thirdArg: String!): String!
-  author: Float!
-}
+  scalar    Date1
+  interface Node {id: ID!}
+  # input CommentedPaginationPOC { input: Int! }
+  input Pagination { value: String }
+  enum OrderByKeyword {ASC,DESC}
+  enum enum2 { A, B, C 
+  D}
+  directive @upper on FIELD_DEFINITION!
+  type Mutation {
+    contactForm(input: OrderByKeyword!): String
+  }
+  type Query implements Node & Node2 {
+    age: Int, title(
+      limit: Int! = 10
+      offset: [Int!]!, thirdArg: String!): String!
+    author: Float!
+  }
 `
 
 type ParsedGraphQL = GetGqlAST<typeof typeDefs>
 
+type Enums = ParsedGraphQL['enums']
 type Directives = ParsedGraphQL['directives']
 type Scalars = ParsedGraphQL['scalars']
 type Interfaces = ParsedGraphQL['interfaces']
 type Types = ParsedGraphQL['types']['Query']
-type Enums = ParsedGraphQL['enums']
 type Inputs = ParsedGraphQL['inputs']

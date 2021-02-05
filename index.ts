@@ -22,7 +22,7 @@ type Trim<
   T1 = RemoveEndWhiteSpaces<T0>
 > = T1
 /*
-type TestConvertArrIntoObj = ConvertArrIntoObject<
+type TestConvertArrIntoObj = NormalizeArray<
   [
     { id: 'id1', val: '1xxxx'},
     { id: 'id2', val: '2xxxx'},
@@ -31,7 +31,10 @@ type TestConvertArrIntoObj = ConvertArrIntoObject<
   'id'
 >
 */
-type ConvertArrIntoObject<
+// inspiration to name this generic `NormalizeArray` comes from normalizr library 
+// which do the same data transformation
+// > (source)[https://github.com/paularmstrong/normalizr]
+type NormalizeArray<
   T extends { [K in Key]: string }[],
   Key extends string,
   ArrValues = T[number],
@@ -164,7 +167,7 @@ type ExtractGQLInputTypesAst<
   RawTypeStrings = ParseGqlInput<T>,
   ArrayOfInputs = Map_ParseRawInputTypeString<RawTypeStrings>,
   // @ts-expect-error
-  RootInputsObject = ConvertArrIntoObject<ArrayOfInputs, 'typeName'>,
+  RootInputsObject = NormalizeArray<ArrayOfInputs, 'typeName'>,
   InputObjectsJustBody = {
     // @ts-expect-error
     [K in keyof RootInputsObject]: RootInputsObject[K]['body']
@@ -187,7 +190,7 @@ type ParseRawInputTypeString<
   // @ts-expect-error
   BodyPropsKeyVal = Map_ParseSimpleKeyValue<SplitByCommaAndLines<T['body']>>,
   // @ts-expect-error
-  InputsObject = ConvertArrIntoObject<BodyPropsKeyVal, 'key'>,
+  InputsObject = NormalizeArray<BodyPropsKeyVal, 'key'>,
   Body = {
     // @ts-expect-error
     [K in keyof InputsObject]: ParseRawGQLValue<InputsObject[K]['value']>
@@ -208,7 +211,7 @@ type ExtractGQLInterfacesAST<
   // we reuse logic from GQL input type which has same body structure as Interface body
   ArrayOfInterfaces = Map_ParseRawInputTypeString<RawInterfaceStrings>,
   // @ts-expect-error
-  RootInterfaceObject = ConvertArrIntoObject<ArrayOfInterfaces, 'typeName'>,
+  RootInterfaceObject = NormalizeArray<ArrayOfInterfaces, 'typeName'>,
   // --- reuse input ends ----
   InterfaceObjectsJustBody = {
     // @ts-expect-error
@@ -231,7 +234,7 @@ type ExtractGQLTypesAST<
   RawTypeStrings = ParseGqlTypes<T>,
   TypesArr = Map_ParseRawTypeString<RawTypeStrings>,
   // @ts-expect-errors
-  TypesObj = ConvertArrIntoObject<TypesArr, 'typeName'>,
+  TypesObj = NormalizeArray<TypesArr, 'typeName'>,
   MergeTypes = {
     // @ts-expect-error
     [K in keyof TypesObj]: TypesObj[K]['body']
@@ -271,7 +274,7 @@ type ParseRawTypeString<
   TypeName = Trim<T['name']>,
   BodyPropsKeyValArr = ParseTypeKeyValuesWithArgs<T['body']>,
   // @ts-expect-error
-  BodyPropsKeyValObj = ConvertArrIntoObject<BodyPropsKeyValArr, 'key'>,
+  BodyPropsKeyValObj = NormalizeArray<BodyPropsKeyValArr, 'key'>,
   Body = {
     // now the GQL parser supports only 1 interface per type. No idea if real GQL supports more
     // TODO: check that + implement if yes
@@ -343,7 +346,7 @@ type ParseTypeKeyValuesWithArgs<
 type ParserRawGQLTypeBodyArgsPropString<
   // TODO: T should be only arg, not whole body
   T extends { key: string; value: string }[],
-  BodyPropsObj = ConvertArrIntoObject<T, 'key'>,
+  BodyPropsObj = NormalizeArray<T, 'key'>,
   T0 = {
     [K in keyof BodyPropsObj]: ParseRawGQLArgValueWithDefaultOption<
       // @ts-expect-error
@@ -359,7 +362,7 @@ type ExtractGQLEnumsAST<
   RawTypeStrings = ParseGqlEnums<T>,
   SplitsArr = Map_ParseRawEnumString<RawTypeStrings>,
   // @ts-expect-error
-  EnumsObject = ConvertArrIntoObject<SplitsArr, 'typeName'>,
+  EnumsObject = NormalizeArray<SplitsArr, 'typeName'>,
   MergeEnums = {
     // @ts-expect-error
     [K in keyof EnumsObject]: EnumsObject[K]['body'][number]
@@ -390,7 +393,7 @@ type ParseRawEnumString<T extends { type: string; body: string }> = {
 type ExtractGQLDirectivesAst<
   T extends string,
   RawDirectives extends { name: string; body: string }[] = ParseGqlDirectives<T>,
-  DirectivesObject = ConvertArrIntoObject<RawDirectives, 'name'>,
+  DirectivesObject = NormalizeArray<RawDirectives, 'name'>,
   Merged = {
     // @ts-expect-error
     [K in keyof DirectivesObject]: ParseRawGQLValue<DirectivesObject[K]['body']>
@@ -416,7 +419,7 @@ type ParseGqlDirectives<
 type ExtractGQLScalarsAst<
   T extends string,
   RawDirectives extends { name: string }[] = ParseGqlScalar<T>,
-  ScalarsObject = ConvertArrIntoObject<RawDirectives, 'name'>,
+  ScalarsObject = NormalizeArray<RawDirectives, 'name'>,
   Merged = {
     [K in keyof ScalarsObject]: any
   }
@@ -483,3 +486,4 @@ type Scalars = ParsedGraphQL['scalars']
 type Interfaces = ParsedGraphQL['interfaces']
 type Types = ParsedGraphQL['types']['Query']
 type Inputs = ParsedGraphQL['inputs']
+
